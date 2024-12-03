@@ -1,10 +1,9 @@
 // import { Link } from "react-router-dom";
-
 // import { useState, useEffect } from "react";
-
 // import Navbar from "./Navbar";
+// import "../App.css";
 
-// function onImageChange(e) {
+// function onImageChange(e, setImages) {
 //   setImages([...e.target.files]);
 // }
 
@@ -22,7 +21,6 @@
 //   return (
 //     <>
 //       <Navbar />
-
 //       <div className="flex flex-col items-center justify-center h-screen text-center">
 //         {/* โลโก้ */}
 //         <div className="mb-8">
@@ -38,11 +36,55 @@
 //           อัปโหลดรูปภาพเพื่อตรวจสอบข่าว
 //         </h1>
 
-//         <input type="file" multiple accept="image/*" onChange={onImageChange}>
-//           {imageURLs.map((imageSrc) => (
-//             <img src={imageSrc} />
+//         {/* Input for file upload */}
+//         {/* <input
+//           type="file"
+//           multiple
+//           accept="image/*"
+//           onChange={(e) => onImageChange(e, setImages)}
+//           className="mb-4"
+//         ></input> */}
+
+//         <label
+//           for="uploadFile1"
+//           class="flex bg-white border-black border-solid border-[3px] rounded-[50px] text-black text-base px-5 py-3 outline-none rounded w-max cursor-pointer mx-auto"
+//         >
+//           <svg
+//             xmlns="http://www.w3.org/2000/svg"
+//             class="w-6 mr-2 fill-black inline"
+//             viewBox="0 0 32 32"
+//           >
+//             <path
+//               d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z"
+//               data-original="#FFFFFF"
+//             />
+//             <path
+//               d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
+//               data-original="#FFFFFF"
+//             />
+//           </svg>
+//           อัปโหลดรูปภาพ
+//           <input
+//             type="file"
+//             id="uploadFile1"
+//             multiple
+//             accept="image/*"
+//             class="hidden"
+//             onChange={(e) => onImageChange(e, setImages)}
+//           />
+//         </label>
+
+//         {/* Image preview */}
+//         <div className="image-preview">
+//           {imageURLs.map((imageSrc, index) => (
+//             <img
+//               key={index}
+//               src={imageSrc}
+//               alt={`Preview ${index}`}
+//               className="h-[500px] object-cover mb-2 mt-3"
+//             />
 //           ))}
-//         </input>
+//         </div>
 
 //         <Link
 //           to="/Result"
@@ -57,8 +99,8 @@
 
 // export default PhotoCheck;
 
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import "../App.css";
 
@@ -80,37 +122,23 @@ function PhotoCheck() {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col items-center justify-center h-screen text-center">
+      <div className="photocheck-container">
         {/* โลโก้ */}
-        <div className="mb-8">
+        <div className="logo">
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/4fffe51a59cb3f9c28051833d3d122d47bafc8a1825840f55ef306edb9297152?placeholderIfAbsent=true&apiKey=d94fca7f07964371945234ca4f7476b3"
             alt="PhotoCheck"
-            className="w-36 h-36 object-cover"
           />
         </div>
 
         {/* หัวข้อ */}
-        <h1 className="text-5xl font-extrabold mb-8">
-          อัปโหลดรูปภาพเพื่อตรวจสอบข่าว
-        </h1>
+        <h1 className="header-title">อัปโหลดรูปภาพเพื่อตรวจสอบข่าว</h1>
 
-        {/* Input for file upload */}
-        {/* <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={(e) => onImageChange(e, setImages)}
-          className="mb-4"
-        ></input> */}
-
-        <label
-          for="uploadFile1"
-          class="flex bg-white border-black border-solid border-[3px] rounded-[50px] text-black text-base px-5 py-3 outline-none rounded w-max cursor-pointer mx-auto"
-        >
+        {/* ปุ่มอัปโหลด */}
+        <label htmlFor="uploadFile1" className="upload-button">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="w-6 mr-2 fill-black inline"
+            className="icon"
             viewBox="0 0 32 32"
           >
             <path
@@ -128,27 +156,18 @@ function PhotoCheck() {
             id="uploadFile1"
             multiple
             accept="image/*"
-            class="hidden"
             onChange={(e) => onImageChange(e, setImages)}
           />
         </label>
 
-        {/* Image preview */}
+        {/* แสดงรูปภาพที่อัปโหลด */}
         <div className="image-preview">
           {imageURLs.map((imageSrc, index) => (
-            <img
-              key={index}
-              src={imageSrc}
-              alt={`Preview ${index}`}
-              className="h-[500px] object-cover mb-2 mt-3"
-            />
+            <img key={index} src={imageSrc} alt={`Preview ${index}`} />
           ))}
         </div>
 
-        <Link
-          to="/Result"
-          className="bg-red-600 text-white font-extrabold px-6 py-2 rounded-lg mt-3 inline-block hover:bg-red-800"
-        >
+        <Link to="/Result" className="submit-button">
           ตรวจสอบข่าว
         </Link>
       </div>

@@ -166,6 +166,24 @@
   text-align: center;
 }
 
+/* Logo */
+.logo {
+  margin-bottom: 2rem; /* เทียบเท่ากับ mb-8 */
+}
+
+.logo img {
+  width: 9rem; /* เทียบเท่ากับ w-36 */
+  height: 9rem; /* เทียบเท่ากับ h-36 */
+  object-fit: cover;
+}
+
+/* Header */
+.header-title {
+  font-size: 3rem; /* เทียบเท่ากับ text-5xl */
+  font-weight: 800; /* Font extrabold */
+  margin-bottom: 2rem; /* เทียบเท่ากับ mb-8 */
+}
+
 /* Upload Button */
 .upload-button {
   display: flex;
@@ -201,6 +219,23 @@
   object-fit: cover;
   margin-bottom: 0.5rem; /* เทียบเท่ากับ mb-2 */
   margin-top: 0.75rem; /* เทียบเท่ากับ mt-3 */
+}
+
+/* Submit Button */
+.submit-button {
+  background-color: #e11d48; /* Red */
+  color: white;
+  font-weight: 800; /* Font extrabold */
+  padding: 0.5rem 1.5rem; /* px-6, py-2 */
+  border-radius: 0.5rem; /* Rounded-lg */
+  margin-top: 0.75rem; /* mt-3 */
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.submit-button:hover {
+  background-color: #9f1239; /* Darker red */
 }
 
 /* Navbar Layout */
@@ -305,8 +340,32 @@
   text-align: center;
 }
 
+/* Logo */
+.logo {
+  margin-bottom: 2rem; /* mb-8 */
+}
+
+.logo img {
+  width: 9rem; /* w-36 */
+  height: 9rem; /* h-36 */
+  object-fit: cover;
+}
+
+/* Header */
+.header-title {
+  font-size: 3rem; /* text-5xl */
+  font-weight: 800; /* font-extrabold */
+  margin-bottom: 2rem; /* mb-8 */
+}
+
+/* URL Input Form */
+.form-container {
+  width: 100%;
+  max-width: 1047px;
+}
+
 .url-input {
-  padding: 1.25rem 3.5rem 1.5rem; /* pt-9, px-14, pb-44 */
+  padding: 2.25rem 3.5rem 11rem; /* pt-9, px-14, pb-44 */
   width: 1000px;
   font-weight: 300; /* font-extralight */
   background-color: white;
@@ -319,6 +378,23 @@
   .url-input {
     padding: 1.25rem 1.25rem 7rem; /* max-md:px-5, max-md:pb-28 */
   }
+}
+
+/* Submit Button */
+.submit-button {
+  background-color: #e11d48; /* Red */
+  color: white;
+  font-weight: 800; /* font-extrabold */
+  padding: 0.5rem 1.5rem; /* px-6, py-2 */
+  border-radius: 0.5rem; /* rounded-lg */
+  margin-top: 0.75rem; /* mt-3 */
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.submit-button:hover {
+  background-color: #9f1239; /* Darker red */
 }
 
 /* SelectCheck Card */

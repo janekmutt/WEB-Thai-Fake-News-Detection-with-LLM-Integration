@@ -1,68 +1,221 @@
-/* Result.css */
+/* Result Section */
 .result-container {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh; /* Full screen height */
-  text-align: center;
+  min-height: 100vh;
+  padding-top: 2rem;
+}
+
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120vh;
+  object-fit: cover;
+  z-index: -1;
 }
 
 .result-header {
-  font-size: 3rem; /* เทียบเท่ากับ text-5xl */
-  font-weight: 800; /* Font extrabold */
-  margin-bottom: 2rem; /* Margin bottom */
-  margin-top: 0.5rem; /* Margin top */
-}
-
-.result-subtitle {
-  margin-top: 2.5rem; /* Margin top 10 */
-  color: #718096; /* Gray color */
-}
-
-.news-box {
   width: 100%;
-  height: 4rem; /* เทียบเท่ากับ h-16 */
+  max-width: 1200px;
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: left;
+  margin-bottom: 2rem;
+  z-index: 2;
+  padding-left: 0.1rem; /* จาก 2rem → เหลือ 0.5rem หรือจะใช้ 1rem ก็ได้ */
+}
+
+.result-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  gap: 3rem;
+  z-index: 2;
+}
+
+.left-panel {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-container {
+  width: 300px;
+  height: 300px;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 800; /* Font extrabold */
-  color: #ffffff; /* White text */
-  margin-top: 5rem; /* Margin top 20 */
+}
+
+.gauge-result-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  text-align: center;
+}
+
+.gauge-subtext {
+  margin-top: 1rem;
+  font-size: 1rem;
+  text-align: center;
+  color: #555;
+}
+
+.result-subtitle {
+  margin-top: 1rem;
+  font-size: 1rem;
+  text-align: center;
+  color: #444;
+}
+
+/* กล่องผลลัพธ์ข่าวจริง/ปลอม */
+.news-box {
+  width: 200px;
+  height: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 1rem;
+  border-radius: 8px;
 }
 
 .news-box.real {
-  background-color: #23af42; /* Green for "real" */
+  background-color: #23af42;
 }
 
 .news-box.fake {
-  background-color: #dd3c3c; /* Red for "fake" */
+  background-color: #dd3c3c;
 }
 
 .news-box.suspicious {
-  background-color: #c6b538; /* Yellow for "suspicious" */
+  background-color: #c6b538;
+}
+
+/* กล่องสรุปทางขวา */
+.summary-box {
+  background-color: #eaf6ff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 550px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summary-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: #e0e0e0;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: #000;
+}
+
+.summary-content-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summary-content {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1rem;
+  min-height: 120px;
+  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0); /* ไม่ให้มีขอบ */
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* บทความที่เกี่ยวข้อง */
+.reference-container {
+  margin-top: 4rem; /* ⬅️ เพิ่มระยะห่างข้างบนมากขึ้น */
+  padding-left: 1rem;
+  padding-right: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 2;
 }
 
 .reference-label {
-  margin-top: 2.5rem; /* Margin top 10 */
-  margin-left: 15rem; /* Margin left 8 */
-  width: 100%;
-  font-weight: 700; /* Font bold */
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #000;
+  margin-bottom: 0.5rem;
   text-align: left;
-  color: #000000; /* Black text */
 }
 
 .reference-box {
-  width: 90%; /* Fixed width */
-  height: 192px; /* Fixed height */
-  margin-top: 2.5rem; /* Margin top 10 */
-  margin-left: 2rem; /* Margin left 8 */
-  background-color: #f5f5f5; /* Neutral color */
-  border-radius: 1.5rem; /* Rounded corners */
-  font-weight: 700; /* Font bold */
+  background-color: #e6f3ff;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  font-family: monospace;
+  font-size: 0.95rem;
+  color: #0056b3;
+  word-break: break-word;
   text-align: left;
-  color: #000000; /* Black text */
-  padding: 1rem; /* Padding for content */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reference-box a {
+  color: #0056b3;
+  text-decoration: none;
+}
+
+.reference-box a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .result-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .result-header {
+    font-size: 2rem;
+    text-align: center;
+    padding: 0;
+  }
+
+  .summary-box {
+    width: 90%;
+    max-width: 100%;
+  }
+
+  .chart-container {
+    width: 250px;
+    height: 250px;
+  }
+
+  .news-box {
+    width: 180px;
+  }
 }
 
 /* Welcome Section */
@@ -89,123 +242,170 @@
   margin-top: 1rem; /* Margin top 4 */
 }
 
-/* Layout */
+/* TextCheck section */
+.background-video {
+  position: absolute;
+  top: 10%;
+  left: 0;
+  width: 100%;
+  height: 120vh;
+  object-fit: cover;
+  z-index: -1;
+}
+
 .textcheck-container {
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
   text-align: center;
 }
 
-/* Logo */
 .logo {
-  margin-bottom: 2rem; /* เทียบเท่ากับ mb-8 */
+  margin-bottom: 2rem;
 }
 
 .logo img {
-  width: 9rem; /* เทียบเท่ากับ w-36 */
-  height: 9rem; /* เทียบเท่ากับ h-36 */
+  width: 9rem;
+  height: 9rem;
   object-fit: cover;
 }
 
-/* Header */
 .header-title {
-  font-size: 3rem; /* เทียบเท่ากับ text-5xl */
-  font-weight: 800; /* Font extrabold */
-  margin-bottom: 2rem; /* เทียบเท่ากับ mb-8 */
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
 }
 
-/* Textarea Form */
 .form-container {
   width: 100%;
   max-width: 1047px;
 }
 
 .textarea {
-  padding: 2.25rem 3.5rem 11rem; /* เทียบเท่ากับ pt-9, px-14, pb-44 */
+  padding: 2.25rem 3.5rem 11rem;
   width: 100%;
-  font-weight: 300; /* Font extralight */
-  background-color: #ffffff;
-  border: 3px solid black; /* Border with solid black */
+  font-weight: 300;
+  background-color: #f0f8ff;
+  border: 3px solid #1560bd;
   border-radius: 50px;
-  color: #737373; /* Neutral color */
+  max-height: 300px;
+  resize: vertical; /* อนุญาตให้ปรับขนาดเฉพาะแนวตั้ง */
+  overflow: auto; /* เปิดใช้งานการเลื่อนแนวตั้ง */
+  color: #737373;
+
+  scrollbar-width: thin; /* สำหรับ Firefox */
+  scrollbar-color: #1e90ff #f0f8ff; /* สี Scrollbar */
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #1e90ff;
+  box-shadow: 0 0 5px rgba(30, 144, 255, 0.8);
+}
+
+.textarea::-webkit-scrollbar {
+  width: 10px; /* ความกว้าง Scrollbar */
+}
+
+.textarea::-webkit-scrollbar-track {
+  background: #f0f8ff; /* สีพื้นหลัง Scrollbar */
+  border-radius: 50px;
+}
+
+.textarea::-webkit-scrollbar-thumb {
+  background-color: #1e90ff; /* สี Scrollbar */
+  border-radius: 50px;
+  border: 3px solid #f0f8ff; /* เพิ่มช่องว่าง */
+}
+
+.textarea::-webkit-scrollbar-thumb:hover {
+  background-color: #1560bd; /* สีเมื่อ Hover */
+}
+
+.submit-button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  font-size: 1.2rem;
+  background-color: #e11d48;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #9f1239;
 }
 
 @media (max-width: 768px) {
   .textarea {
-    padding: 1.25rem 1.25rem 7rem; /* เทียบเท่ากับ max-md:px-5, max-md:pb-28 */
+    padding: 1.25rem 1.25rem 7rem;
   }
 }
 
-/* Submit Button */
-.submit-button {
-  background-color: #e11d48; /* Red */
-  color: white;
-  font-weight: 800; /* Font extrabold */
-  padding: 0.5rem 1.5rem; /* px-6, py-2 */
-  border-radius: 0.5rem; /* Rounded-lg */
-  margin-top: 0.75rem; /* mt-3 */
-  display: inline-block;
-  text-align: center;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.submit-button:hover {
-  background-color: #9f1239; /* Darker red */
-}
-
-/* Layout */
+/* PhotoCheck section */
 .photocheck-container {
+  position: relative;
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
   text-align: center;
 }
 
-/* Upload Button */
 .upload-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: white;
-  border: 3px solid black;
+  background-color: #f0f8ff;
+  border: 3px solid #1560bd;
   border-radius: 50px;
   color: black;
-  font-size: 1rem; /* เทียบเท่ากับ text-base */
-  padding: 0.75rem 1.25rem; /* เทียบเท่ากับ px-5 py-3 */
+  font-size: 20px;
+  /* font-weight: bold; */
+  padding: 0.75rem 1.25rem;
   cursor: pointer;
-  margin: 0 auto; /* Center horizontally */
+  margin: 0 auto;
 }
 
 .upload-button:hover {
-  background-color: #f5f5f5; /* Slight hover effect */
+  background-color: #f5f5f5;
+  outline: none;
+  border-color: #1e90ff;
+  box-shadow: 0 0 5px rgba(30, 144, 255, 0.8);
 }
 
 .upload-button svg {
-  width: 1.5rem; /* เทียบเท่ากับ w-6 */
-  margin-right: 0.5rem; /* เทียบเท่ากับ mr-2 */
+  width: 1.5rem;
+  margin-right: 0.5rem;
   fill: black;
 }
 
 .upload-button input {
-  display: none; /* เทียบเท่ากับ hidden */
+  display: none;
 }
 
-/* Image Preview */
 .image-preview img {
-  height: 500px;
+  max-height: 350px;
+  overflow-y: auto;
   object-fit: cover;
-  margin-bottom: 0.5rem; /* เทียบเท่ากับ mb-2 */
-  margin-top: 0.75rem; /* เทียบเท่ากับ mt-3 */
+  margin: 0.75rem 0 0.5rem;
 }
 
-/* Navbar Layout */
+/* Navbar section */
 .navbar {
-  background-color: #23486b; /* Blue */
+  background-color: #0066b2; /* Blue */
   height: 104px;
 }
 
@@ -222,7 +422,6 @@
   gap: 2rem; /* space-x-8 */
 }
 
-/* Menu Items */
 .navbar-item {
   position: relative;
   cursor: pointer;
@@ -241,7 +440,6 @@
   display: block;
 }
 
-/* Dropdown */
 .dropdown-content {
   display: none;
   position: absolute;
@@ -295,33 +493,110 @@
   color: white;
 }
 
-/* Layout */
+.lang-toggle {
+  position: relative;
+  display: flex;
+  background: #ffffff44;
+  border-radius: 999px;
+  padding: 4px;
+  gap: 0.25rem;
+  margin-left: auto; /* ดันไปขวาสุด */
+  z-index: 1;
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.lang-btn.active {
+  color: black;
+}
+
+.lang-highlight {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: calc(100% - 8px);
+  background: white;
+  border-radius: 999px;
+  transition: all 0.3s ease;
+  z-index: 0;
+}
+
+/* LinkCheck section */
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120vh;
+  object-fit: cover;
+  z-index: -1;
+}
 .linkcheck-container {
+  position: relative;
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  padding: 20px;
   text-align: center;
+}
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input-container {
+  width: 100%;
+  max-width: 1000px;
 }
 
 .url-input {
-  padding: 1.25rem 3.5rem 1.5rem; /* pt-9, px-14, pb-44 */
-  width: 1000px;
-  font-weight: 300; /* font-extralight */
-  background-color: white;
-  border: 3px solid black;
+  padding: 1.25rem 3.5rem 1.5rem;
+  width: 80%;
+  max-width: 1000px;
+  font-weight: 300;
+  background-color: #f0f8ff;
+  border: 3px solid #1560bd;
   border-radius: 50px;
-  color: #737373; /* text-neutral-500 */
+  color: #737373;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: #1e90ff;
+  box-shadow: 0 0 5px rgba(30, 144, 255, 0.8);
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
   .url-input {
-    padding: 1.25rem 1.25rem 7rem; /* max-md:px-5, max-md:pb-28 */
+    padding: 1rem;
+    font-size: 1em;
   }
 }
 
-/* SelectCheck Card */
+/* InfoOne SelectCheck Card */
 .selectcheck-card {
   background-color: white;
   border: 1px solid #e5e7eb; /* border-gray-200 */
@@ -393,7 +668,7 @@
   transform: rotate(180deg); /* rtl:rotate-180 */
 }
 
-/* Layout */
+/* About section */
 .about-container {
   display: flex;
   flex-direction: column;

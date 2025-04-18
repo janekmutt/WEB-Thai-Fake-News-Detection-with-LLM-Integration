@@ -1,48 +1,161 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import "../App.css";
+import bluebg12 from "../assets/bluebg12.mp4";
+import { useTranslation } from "react-i18next";
 
 function LinkCheck() {
-  const [count, setCount] = useState(0);
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!url.match(/^https:\/\/.*/)) {
+      setError(t("error_https")); // ต้องขึ้นต้นด้วย https://
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input_text: url }), // ส่ง URL เป็น input_text
+      });
+
+      const result = await response.json();
+
+      // ส่งไปหน้า Result พร้อมข้อมูล
+      navigate("/Result", {
+        state: {
+          input_text: url,
+          newsType: result.result_news, // real, fake, suspicious
+        },
+      });
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาด:", err);
+      setError("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+    }
+  };
 
   return (
     <>
       <Navbar />
       <div className="linkcheck-container">
-        {/* โลโก้ */}
+        <video
+          className="background-video"
+          src={bluebg12}
+          autoPlay
+          loop
+          muted
+        ></video>
+
         <div className="logo">
           <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e9c8698ccd0ec2c1bd2d7a639ab14e9df3ac6326f91cc810e39a660f782db66b?placeholderIfAbsent=true&apiKey=d94fca7f07964371945234ca4f7476b3"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/e9c8698ccd0ec2c1bd2d7a639ab14e9df3ac6326f91cc810e39a660f782db66b?placeholderIfAbsent=true"
             alt="LinkCheck"
           />
         </div>
 
-        {/* หัวข้อ */}
-        <h1 className="header-title">URL เพื่อตรวจสอบข่าว</h1>
+        <h1 className="header-title">{t("link_check_title")}</h1>
 
-        {/* กล่องข้อความ */}
-        <form className="form-container">
-          <input
-            type="url"
-            id="website_url"
-            placeholder="โปรดวาง URL"
-            pattern="https://.*"
-            size="30"
-            required
-            className="url-input"
-          />
+        <form className="form-container" onSubmit={handleSubmit}>
+          <div className="input-container">
+            <input
+              type="url"
+              id="website_url"
+              placeholder={t("link_check_placeholder")}
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+              className="url-input"
+            />
+            {error && <p className="error-message">{error}</p>}
+          </div>
+
+          <button type="submit" className="submit-button">
+            {t("verify_button")}
+          </button>
         </form>
-
-        <Link to="/Result" className="submit-button">
-          ตรวจสอบข่าว
-        </Link>
       </div>
     </>
   );
 }
 
 export default LinkCheck;
+
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import Navbar from "./Navbar";
+// import "../App.css";
+// import bluebg12 from "../assets/bluebg12.mp4";
+
+// function LinkCheck() {
+//   const [url, setUrl] = useState("");
+//   const [error, setError] = useState("");
+//   const navigate = useNavigate();
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     if (!url.match(/^https:\/\/.*/)) {
+//       setError("โปรดป้อน URL ที่ขึ้นต้นด้วย https://");
+//       return;
+//     }
+//     setError("");
+//     navigate("/Result");
+//   };
+
+//   return (
+//     <>
+//       <Navbar />
+//       <div className="linkcheck-container">
+//         <video
+//           className="background-video"
+//           src={bluebg12}
+//           autoPlay
+//           loop
+//           muted
+//         ></video>
+//         {/* โลโก้ */}
+//         <div className="logo">
+//           <img
+//             src="https://cdn.builder.io/api/v1/image/assets/TEMP/e9c8698ccd0ec2c1bd2d7a639ab14e9df3ac6326f91cc810e39a660f782db66b?placeholderIfAbsent=true&apiKey=d94fca7f07964371945234ca4f7476b3"
+//             alt="LinkCheck"
+//           />
+//         </div>
+
+//         {/* หัวข้อ */}
+//         <h1 className="header-title">URL เพื่อตรวจสอบข่าว</h1>
+
+//         {/* กล่องข้อความ */}
+//         <form className="form-container" onSubmit={handleSubmit}>
+//           <div className="input-container">
+//             <input
+//               type="url"
+//               id="website_url"
+//               placeholder="โปรดวาง URL เพื่อตรวจสอบข่าว"
+//               value={url}
+//               onChange={(e) => setUrl(e.target.value)}
+//               required
+//               className="url-input"
+//             />
+//             {error && <p className="error-message">{error}</p>}
+//           </div>
+//           <button type="submit" className="submit-button">
+//             ตรวจสอบข่าว
+//           </button>
+//         </form>
+//       </div>
+//     </>
+//   );
+// }
+
+// export default LinkCheck;
 
 // import { Link } from "react-router-dom";
 // import { useState } from "react";

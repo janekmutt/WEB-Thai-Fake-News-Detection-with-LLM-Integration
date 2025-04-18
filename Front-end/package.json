@@ -2,7 +2,7 @@
   "name": "fake-new-frontend",
   "private": true,
   "version": "0.0.0",
-  "proxy":"http://localhost:5000",
+  "proxy": "http://127.0.0.1:5000",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,11 +11,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@lottiefiles/dotlottie-web": "^0.38.2",
+    "@mui/icons-material": "^6.2.1",
+    "@mui/material": "^6.2.1",
+    "@mui/styled-engine-sc": "^6.2.1",
+    "@mui/x-charts": "^7.29.0",
+    "@tsparticles/react": "^3.0.0",
     "dropzone": "^6.0.0-beta.2",
+    "framer-motion": "^12.7.4",
+    "i18next": "^25.0.0",
+    "i18next-browser-languagedetector": "^8.0.4",
+    "motion": "^11.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^15.4.1",
     "react-icons": "^5.3.0",
-    "react-router-dom": "^7.0.1"
+    "react-router-dom": "^7.0.1",
+    "recharts": "^2.15.0",
+    "styled-components": "^6.1.13",
+    "tsparticles": "^3.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

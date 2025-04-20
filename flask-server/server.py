@@ -10,7 +10,9 @@ from pythainlp.tag import pos_tag, NER
 from pythainlp.tokenize import word_tokenize
 from pythainlp.corpus import thai_stopwords
 from tensorflow.keras.models import load_model
+from gensim.models import KeyedVectors
 import os
+
 # import asyncio
 # import aiohttp
 # from concurrent.futures import ThreadPoolExecutor
@@ -18,19 +20,33 @@ import os
 
 SERPAPI_KEY = '1afe956e3bee4f7c44afda188b524793802191f2ddd26256b2ecbe189cefc863'
 
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/predict": {
+        "origins": ["http://localhost:5173"],
+        "methods": ["POST"],
+        "allow_headers": ["Content-Type"],
+        "expose_headers": ["Content-Type"]
+    }
+})
 # executor = ThreadPoolExecutor(max_workers=4)
 # Initialize components
 crawler = WebCrawler()
 
+# Load FastText model
+def load_fasttext_model():
+    model_path = r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin'
+    return KeyedVectors.load_word2vec_format(model_path, binary=False)
+
+fasttext_model = load_fasttext_model()
 
 # Load models
-with open("vectorizer.pkl", "rb") as f:
+with open(r"C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
 ner = NER("thainer")
-model = load_model('best_model_LSTM_85.h5')
+model = load_model(r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5')
 stopwords = set(thai_stopwords())
 
 def is_url(text):
@@ -62,6 +78,18 @@ def get_search_results(query):
         print(f"Search error: {e}")
     return None
 
+def get_word2vec_embedding(text, model=fasttext_model, vector_size=300):
+    """Convert text to FastText embedding vector"""
+    vec = np.zeros((vector_size,))
+    count = 0
+    for word in word_tokenize(text, engine="deepcut"):
+        if word in model:
+            vec += model[word]
+            count += 1
+    if count > 0:
+        vec /= count  # Average vectors
+    return vec
+
 def preprocess_and_extract_features(text):
     # 1. Clean text
     cleaned_text = re.sub(r"[!\'\-#]", "", text)
@@ -88,8 +116,14 @@ def preprocess_and_extract_features(text):
     bow_vector = vectorizer.transform([processed_text_str]).toarray()
     sum_bow = bow_vector.sum(axis=1)[0]
 
-    # Prepare features for model prediction
-    model_features = np.array([[word_count, noun_count, entity_count, sum_bow]])
+    # 8. FastText Embeddings (NEW)
+    fasttext_vec = get_word2vec_embedding(cleaned_text)
+
+    # Combine all features (now includes FastText)
+    model_features = np.concatenate([
+        np.array([[word_count, noun_count, entity_count, sum_bow]]),
+        fasttext_vec.reshape(1, -1)
+    ], axis=1)
 
     return {
         "processed_text": filtered_tokens,
@@ -98,7 +132,8 @@ def preprocess_and_extract_features(text):
             "word_count": word_count,
             "noun_count": noun_count,
             "entity_count": entity_count,
-            "sum_bow": sum_bow
+            "sum_bow": sum_bow,
+            "embedding_size": len(fasttext_vec)  # NEW
         }
     }
 
@@ -138,14 +173,16 @@ def predict():
             f"SEARCH RESULT CONTENT: {search_metadata['content'][:1000] if search_metadata['content'] else 'N/A'}"
         )
         
-        # Preprocess and extract features
+        # Preprocess and extract features (now with FastText)
         result = preprocess_and_extract_features(analysis_text)
+        input_array = np.array(result['features'])        # shape: (1, 304)
+        input_array = np.expand_dims(input_array, axis=1) # shape: (1, 1, 304)
         
         # Make prediction
-        predictions = model.predict(np.array(result['features']))
+        predictions = model.predict(input_array)
         
         # Get dominant category
-        categories = ["True", "Suspicious", "Fake"]
+        categories = ["True", "Fake", "Suspicious"]
         dominant_index = np.argmax(predictions[0])
         dominant_category = categories[dominant_index]
         dominant_probability = float(predictions[0][dominant_index])
@@ -153,16 +190,12 @@ def predict():
         return jsonify({
             "prediction": dominant_category,
             "probability": dominant_probability,
-            "metadata": {  # For reference
-                "user_input": user_input,
-                "search_url": search_metadata['url'],
-                "search_title": search_metadata['title']
-            }
         })
         
     except Exception as e:
         return jsonify({
-            "error": f"Processing error: {str(e)}"
+            "error": f"Processing error: {str(e)}",
+            "fallback_input": user_input[:500] if user_input else None
         }), 500
 
 if __name__ == '__main__':

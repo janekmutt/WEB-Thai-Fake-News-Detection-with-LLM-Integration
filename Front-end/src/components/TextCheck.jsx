@@ -156,7 +156,6 @@ function TextCheck() {
         </div>
 
         <h1 className="header-title">{t("text_check_title")}</h1>
-        <p className="description">{t("text_check_points")}</p>
 
         <form className="form-container" onSubmit={handleSubmit}>
           <label htmlFor="newsContent" className="sr-only">

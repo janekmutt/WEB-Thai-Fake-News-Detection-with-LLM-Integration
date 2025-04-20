@@ -214,6 +214,7 @@ const ResultWithChart = () => {
             </p>
 
             <NewsBox newsType={newsType} t={t} />
+            <p className="result-note">{t("disclaimer_text")}</p>
           </div>
 
           <div className="summary-box">

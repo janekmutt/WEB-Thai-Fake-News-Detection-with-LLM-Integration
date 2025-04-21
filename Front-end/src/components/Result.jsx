@@ -110,7 +110,12 @@ const ResultWithChart = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { input_text, newsType, probability = 0 } = location.state || {};
+  const {
+    input_text,
+    newsType,
+    probability = 0,
+    summary = "",
+  } = location.state || {};
 
   // Fallback UI if page is accessed directly
   if (!location.state) {
@@ -221,10 +226,36 @@ const ResultWithChart = () => {
             <div className="summary-title">{t("summary")}</div>
             <div className="summary-content-group">
               <div className="summary-content">
-                <p>ประเด็นที่ 1...</p>
+                <p>{summary}</p>
               </div>
               <div className="summary-content">
-                <p>ประเด็นที่ 2...</p>
+                <p>
+                  methionylglutaminylarginyltyrosylglutamylserylleucyl
+                  phenylalanylalanylglutaminylleucyllysylglutamylarginyl
+                  lysylglutamylglycylalanylphenylalanylvalylprolylphenyl
+                  alanylvalylthreonylleucylglycylaspartylprolylglycylisol
+                  eucylglutamylglutaminylserylleucyllysylisoleucylaspartyl
+                  threonylleucylisoleucylglutamylalanylglycylalanylaspartyl
+                  alanylleucylglutamylleucylglycylisoleucylprolylphenyl
+                  alanylserylaspartylprolylleucylalanylaspartylglycylprolyl
+                  threonylisoleucylglutaminylasparaginylalanylthreonylleucyl
+                  arginylalanylphenylalanylalanylalanylglycylvalylthreonyl
+                  prolylalanylglutaminylcysteinylphenylalanylglutamyl
+                  methionylleucylalanylleucylisoleucylarginylglutaminyllysyl
+                  histidylprolylthreonylisoleucylprolylisoleucylglycylleucyl
+                  leucylmethionyltyrosylalanylasparaginylleucylvalylphenyl
+                  alanylasparaginyllysylglycylisoleucylaspartylglutamylphenyl
+                  alanyltyrosylalanylglutaminylcysteinylglutamyllysylvalyl
+                  glycylvalylaspartylserylvalylleucylvalylalanylaspartylvalyl
+                  prolylvalylglutaminylglutamylserylalanylprolylphenylalanyl
+                  arginylglutaminylalanylalanylleucylarginylhistidylasparaginyl
+                  valylalanylprolylisoleucylphenylalanylisoleucylcysteinyl
+                  prolylprolylaspartylalanylaspartylaspartylaspartylleucyl
+                  leucylarginylglutaminylisoleucylalanylseryltyrosylglycyl
+                  arginylglycyltyrosylthreonyltyrosylleucylleucylserylarginyl
+                  alanylglycylvalylthreonylglycylalanylglutamylasparaginyl
+                  arginylalanylalanylleucylprolylleucylasparaginylhistidyl
+                </p>
               </div>
             </div>
           </div>

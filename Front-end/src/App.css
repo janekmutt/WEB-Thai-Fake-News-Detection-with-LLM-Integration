@@ -149,10 +149,33 @@
   border-radius: 10px;
   padding: 1rem;
   min-height: 120px;
-  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0); /* ไม่ให้มีขอบ */
+  max-height: 200px; /* 👈 กำหนดความสูงสูงสุดตามต้องการ */
+  overflow-y: auto; /* 👈 เปิด scroll เมื่อเกิน max-height */
+  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
   color: #333;
   font-size: 1rem;
   line-height: 1.6;
+
+  /* scrollbar style (optional) */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f0f8ff;
+}
+
+.summary-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.summary-content::-webkit-scrollbar-track {
+  background: #f0f8ff;
+}
+
+.summary-content::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 10px;
+}
+
+.summary-content::-webkit-scrollbar-thumb:hover {
+  background-color: #1560bd;
 }
 
 /* บทความที่เกี่ยวข้อง */

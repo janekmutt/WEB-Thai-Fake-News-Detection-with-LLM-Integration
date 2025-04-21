@@ -126,6 +126,7 @@ function TextCheck() {
           input_text: newsContent,
           newsType: result.prediction,
           probability: result.probability,
+          summary: result.summary,
         },
       });
     } catch (error) {

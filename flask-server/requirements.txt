@@ -1,0 +1,6 @@
+crawl4ai
+PyMuPDF
+googlesearch-python 
+streamlit
+aiohttp
+fitz

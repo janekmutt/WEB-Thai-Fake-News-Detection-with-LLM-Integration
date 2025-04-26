@@ -19,7 +19,6 @@
     "@mui/styled-engine-sc": "^6.2.1",
     "@mui/x-charts": "^7.29.0",
     "@tsparticles/react": "^3.0.0",
-    "axios": "^1.8.4",
     "dropzone": "^6.0.0-beta.2",
     "framer-motion": "^12.7.4",
     "i18next": "^25.0.0",

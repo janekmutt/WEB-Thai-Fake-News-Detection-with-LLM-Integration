@@ -6,7 +6,7 @@ Model_Development/DL_model/LSTM.ipynb
 Model_Development/DL_model/LSTM.ipynb
 Model_Development/DL_model/vectorizer.pkl
 node_modules
-node_modules
-/flask-server/myenv/Lib
-/flask-server/myenv2
 /flask-server/myenv
+/flask-server/myenv2
+/flask-server/__pycache__
+/flask-server/__pycache__

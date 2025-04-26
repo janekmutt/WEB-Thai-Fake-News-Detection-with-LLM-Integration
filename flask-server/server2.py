@@ -10,27 +10,25 @@ import easyocr
 import cv2
 import numpy as np
 from flask_cors import CORS
+from gradio_client import Client
+import ast 
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
 
-# Load FastText model
+# Load original models EXACTLY as in your code
 fasttext_model = KeyedVectors.load_word2vec_format(
-    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
+    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
     binary=False
 )
-
-# Load CountVectorizer
 vectorizer = joblib.load(
-    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
+    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
 )
-
-# Load the trained model
-model = tf.keras.models.load_model(
-    r"C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
+lstm_model = tf.keras.models.load_model(
+    r"C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
     compile=False
 )
-model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+lstm_model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 # OCR function
 def ocr_from_image(image):
@@ -94,29 +92,90 @@ def preprocess_and_extract_features(text):
     X_combined = np.concatenate([word_vector, numeric_features], axis=-1)
     return X_combined
 
+# Load Gradio Clients
+bert_client = Client("EXt1/BERT-thainews-classification")
+mdeberta_client = Client("EXt1/Mdeberta_v3_Thainews_Classification")
+
+def predict_with_bert(text):
+    result = bert_client.predict(text=text, api_name="/predict")
+    if isinstance(result, str):
+        # Safely parse the returned string into a tuple
+        result = ast.literal_eval(result)
+    label, prob_str = result  # result is ('Fake News', '81.37%')
+    probability = float(prob_str.replace('%', '')) / 100
+    return label, probability
+
+def predict_with_mdeberta(text):
+    result = mdeberta_client.predict(text=text, api_name="/predict")
+    if isinstance(result, str):
+        # Safely parse the returned string into a tuple
+        result = ast.literal_eval(result)
+    label, prob_str = result
+    probability = float(prob_str.replace('%', '')) / 100
+    return label, probability
+
+def predict_with_lstm(text):
+    X_input = preprocess_and_extract_features(text)
+    prediction = lstm_model.predict(X_input)
+    categories = ["Real News", "Fake News"]
+    dominant_index = np.argmax(prediction[0])
+    dominant_label = categories[dominant_index]
+    probability = float(prediction[0][dominant_index])
+    return dominant_label, probability
+
+def majority_vote(predictions):
+    """
+    predictions: list of tuples like [('Fake News', 0.81), ('Fake News', 0.85), ('True News', 0.40)]
+    """
+    label_votes = {}
+    prob_accumulator = {}
+
+    for label, prob in predictions:
+        label_votes[label] = label_votes.get(label, 0) + 1
+        prob_accumulator[label] = prob_accumulator.get(label, 0.0) + prob
+
+    # Find label with majority vote
+    majority_label = max(label_votes.items(), key=  lambda x: (x[1], prob_accumulator.get(x[0], 0.0)))[0]
+    average_probability = prob_accumulator[majority_label] / label_votes[majority_label]
+    return majority_label, average_probability
+
+# 3. SINGLE PREDICTION ENDPOINT (ORIGINAL + NEW FUNCTIONALITY)
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
-    user_input = data.get("text", "")
+    user_input = data.get("text", "").strip()
 
-    if not user_input.strip():
-        return jsonify({"error": "⚠️ Missing 'headline' field"}), 400
+    if not user_input:
+        return jsonify({"error": "Text input is required"}), 400
 
     try:
-        X_input = preprocess_and_extract_features(user_input)
-        predictions = model.predict(X_input)
+        # Predictions from all 3 models
+        lstm_label, lstm_prob = predict_with_lstm(user_input)
+        bert_label, bert_prob = predict_with_bert(user_input)
+        mdeberta_label, mdeberta_prob = predict_with_mdeberta(user_input)
 
-        categories = ["True", "Fake", "Suspicious"]
-        dominant_index = np.argmax(predictions[0])
-        dominant_category = categories[dominant_index]
-        dominant_probability = float(predictions[0][dominant_index])
+        # Ensemble
+        all_predictions = [
+            (lstm_label, lstm_prob),
+            (bert_label, bert_prob),
+            (mdeberta_label, mdeberta_prob)
+        ]
 
-        print("Dominant Probability:", dominant_probability)  # ตรวจสอบค่านี้
+        final_label, final_avg_prob = majority_vote(all_predictions)
 
-        return jsonify({
-            "prediction": dominant_category,
-            "probability": dominant_probability,  # ค่าตัวนี้ที่ส่งกลับไป
-        })
+        # A. Original response
+        response = {
+            "prediction": final_label,
+            "probability": round(final_avg_prob, 4),
+            "input_text": user_input,
+            "individual_predictions": {
+                "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
+                "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
+                "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
+            }
+        }
+
+        return jsonify(response)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

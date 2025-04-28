@@ -225,10 +225,10 @@ function TextCheck() {
       // ส่งข้อมูลไปยังหน้า Result รวมทั้ง summary
       navigate("/Result", {
         state: {
-          // input_text: newsContent,
+          input_text: newsContent,
           newsType: result.prediction,
           probability: result.probability,
-          summary: result.summary, // ส่ง summary ไปยัง Result
+          summary: result.summary,
         },
       });
     } catch (error) {

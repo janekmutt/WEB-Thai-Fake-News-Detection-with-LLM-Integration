@@ -22,7 +22,6 @@
   "result_title": "News Analysis Result",
   "real_news": "Real News",
   "fake_news": "Fake News",
-  "suspicious_news": "Misleading News",
   "result_from_text": "From \"{{text}}\"",
   "related_article": "Related Article",
   "summary": "Summary",

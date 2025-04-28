@@ -1,77 +1,23 @@
-
 # import easyocr
 # import cv2
 # import numpy as np
-
-# # ฟังก์ชันที่ใช้หมุนภาพให้อยู่ในแนวตั้ง
-# def rotate_image(image):
-#     # แปลงเป็นเทาเพื่อใช้ในการตรวจจับมุม
-#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#     # ใช้การตรวจจับขอบของภาพ
-#     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-    
-#     # ค้นหาสายขอบในภาพ
-#     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=50, maxLineGap=10)
-
-#     # ตรวจจับมุมของเส้นในภาพ
-#     if lines is not None:
-#         angles = []
-#         for line in lines:
-#             x1, y1, x2, y2 = line[0]
-#             angle = np.arctan2(y2 - y1, x2 - x1) * 180 / np.pi  # คำนวณมุม
-#             angles.append(angle)
-
-#         # หาองศามุมเฉลี่ยจากเส้นทั้งหมด
-#         median_angle = np.median(angles)
-
-#         # หมุนภาพตามมุมที่คำนวณได้
-#         height, width = image.shape[:2]
-#         center = (width // 2, height // 2)
-#         rotation_matrix = cv2.getRotationMatrix2D(center, median_angle, 1.0)
-#         rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
-
-#         return rotated_image
-
-#     return image  # ถ้าไม่พบเส้น, ไม่ทำการหมุน
-
-# # ฟังก์ชันการปรับปรุงภาพ (ลดสัญญาณรบกวนและเพิ่มความคมชัด)
-# def preprocess_image(image):
-#     # แปลงเป็นขาวดำ
-#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-#     # ลดสัญญาณรบกวน (Noise Reduction)
-#     denoised = cv2.fastNlMeansDenoising(gray, None, 30, 7, 21)
-
-#     # ปรับความคมชัด (Sharpening)
-#     kernel = np.array([[0, -1, 0], [-1, 5,-1], [0, -1, 0]])  # Sharpen kernel
-#     sharpened = cv2.filter2D(denoised, -1, kernel)
-    
-#     # ใช้ Adaptive Thresholding เพื่อแยกข้อความออกจากพื้นหลัง
-#     threshed = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-#                                     cv2.THRESH_BINARY, 11, 2)
-#     return threshed
+# from PIL import Image
+# import pytesseract
+# import matplotlib.pyplot as plt
 
 # # ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ
 # def ocr_from_image(image_path):
-#     # โหลดรูปภาพจากพาธที่ส่งเข้ามา
 #     image = cv2.imread(image_path)
     
-#     # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
 #     if image is None:
 #         print("Error: Image not found or cannot be loaded")
 #         return
     
-#     # หมุนภาพให้อยู่ในแนวตั้งหากจำเป็น
-#     rotated_image = rotate_image(image)
-
-#     # ปรับภาพให้มีความคมชัดและลดสัญญาณรบกวน
-#     processed_image = preprocess_image(rotated_image)
-    
-#     # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB
-#     image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
+#     # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB  
+#     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
 #     # ใช้ easyocr ในการแปลงภาพเป็นข้อความ
-#     reader = easyocr.Reader(['th', 'en'])  # เพิ่มภาษาไทยและภาษาอังกฤษ
+#     reader = easyocr.Reader(['th', 'en'])  
 #     result = reader.readtext(image_rgb, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
 
 #     if result:
@@ -83,85 +29,182 @@
 
 # # ทดสอบการใช้งาน
 # if __name__ == "__main__":
-#     # รับพาธของรูปภาพจากผู้ใช้หรือจากตัวแปรอื่น
-#     image_path = "C:\\Users\\Janejojija\\Downloads\\S__16924676.jpg"  # พาธของภาพที่คุณอัปโหลด
+#     image_path = "C:\\Users\\Janejojija\\Downloads\\GApIOu9bgAA1Fc6.jpg"
+#     ocr_from_image(image_path)
+
+# import easyocr
+# import cv2
+# import numpy as np
+# from PIL import Image
+# import pytesseract
+# import matplotlib.pyplot as plt
+
+# # ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ โดยใช้ทั้ง EasyOCR และ Tesseract
+# def ocr_from_image(image_path):
+#     # อ่านภาพจากเส้นทางที่ระบุ
+#     image = cv2.imread(image_path)
+    
+#     if image is None:
+#         print("Error: Image not found or cannot be loaded")
+#         return
+    
+#     # ปรับขนาดและปรับภาพให้ชัดเจน (Resizing, Contrast, Sharpness)
+#     image_resized = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_LINEAR)  # ขยายภาพ
+#     gray = cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY)  # แปลงเป็นภาพขาวดำ
+#     enhanced_img = cv2.equalizeHist(gray)  # ปรับคอนทราสต์ภาพ
+
+#     # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB  
+#     image_rgb = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2RGB)
+
+#     # ใช้ easyocr ในการแปลงภาพเป็นข้อความ
+#     reader = easyocr.Reader(['th', 'en'])  # อ่านภาษาไทยและอังกฤษ
+#     result_easyocr = reader.readtext(image_rgb, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
+
+#     if result_easyocr:
+#         print("ข้อความที่พบในภาพจาก EasyOCR:")
+#         for text in result_easyocr:
+#             print(text)
+#     else:
+#         print("ไม่พบข้อความในภาพจาก EasyOCR")
+
+#     # ใช้ Tesseract เพื่อดึงข้อความจากภาพ (เพิ่มความแม่นยำ)
+#     result_tesseract = pytesseract.image_to_string(enhanced_img, lang='tha+eng')
+    
+#     if result_tesseract.strip():
+#         print("\nข้อความที่พบในภาพจาก Tesseract OCR:")
+#         print(result_tesseract)
+#     else:
+#         print("ไม่พบข้อความในภาพจาก Tesseract OCR")
+
+# # ทดสอบการใช้งาน
+# if __name__ == "__main__":
+#     # image_path = "C:\\Users\\Janejojija\\Downloads\\GApIOu9bgAA1Fc6.jpg"
+#     image_path = "C:\\Users\\Janejojija\\Downloads\\traffic-sign-illustrate.jpg"
 #     ocr_from_image(image_path)
 
 import easyocr
 import cv2
 import numpy as np
 from PIL import Image
+import pytesseract
+import matplotlib.pyplot as plt
 
-# ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ
+# ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ โดยใช้ทั้ง EasyOCR และ Tesseract
 def ocr_from_image(image_path):
+    # อ่านภาพจากเส้นทางที่ระบุ
     image = cv2.imread(image_path)
     
     if image is None:
         print("Error: Image not found or cannot be loaded")
         return
     
-    # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
-    # ใช้ easyocr ในการแปลงภาพเป็นข้อความ
-    reader = easyocr.Reader(['th', 'en'])  
-    result = reader.readtext(image_rgb, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
+    # ปรับขนาดและปรับภาพให้ชัดเจน (Resizing, Contrast, Sharpness)
+    image_resized = cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_LINEAR)  # ขยายภาพ
+    gray = cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY)  # แปลงเป็นภาพขาวดำ
+    enhanced_img = cv2.equalizeHist(gray)  # ปรับคอนทราสต์ภาพ
 
-    if result:
-        print("ข้อความที่พบในภาพ:")
-        for text in result:
+    # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB  
+    image_rgb = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2RGB)
+
+    # ใช้ easyocr ในการแปลงภาพเป็นข้อความ
+    reader = easyocr.Reader(['th', 'en'])  # อ่านภาษาไทยและอังกฤษ
+    result_easyocr = reader.readtext(image_rgb, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
+
+    if result_easyocr:
+        print("ข้อความที่พบในภาพจาก EasyOCR:")
+        for text in result_easyocr:
             print(text)
     else:
-        print("ไม่พบข้อความในภาพ")
+        print("ไม่พบข้อความในภาพจาก EasyOCR")
+
+    # ใช้ Tesseract เพื่อดึงข้อความจากภาพ (เพิ่มความแม่นยำ)
+    result_tesseract = pytesseract.image_to_string(enhanced_img, lang='tha+eng')
+    
+    if result_tesseract.strip():
+        print("\nข้อความที่พบในภาพจาก Tesseract OCR:")
+        print(result_tesseract)
+    else:
+        print("ไม่พบข้อความในภาพจาก Tesseract OCR")
 
 # ทดสอบการใช้งาน
 if __name__ == "__main__":
-    image_path = "C:\\Users\\Janejojija\\Downloads\\GApIOu9bgAA1Fc6.jpg"
+    image_path = "C:\\Users\\Janejojija\\Pictures\\Screenshots\\Screenshot 2025-04-25 140008.png"
+    # image_path = "C:\\Users\\Janejojija\\Downloads\\traffic-sign-illustrate.jpg"  
     ocr_from_image(image_path)
 
-# import easyocr
 # import cv2
+# import pytesseract
 # import numpy as np
+# import easyocr
+# import matplotlib.pyplot as plt
 
-# # ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ
+# # ฟังก์ชันเพื่อหามุมการเอียงของข้อความ
+# def correct_text_skew(image):
+#     # แปลงภาพเป็นสีเทา
+#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+#     # ใช้การตรวจจับขอบ (Canny edge detection)
+#     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    
+#     # หาคอนทัวร์ในภาพ (Contours)
+#     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+#     # หามุมเอียงของแต่ละคอนทัวร์และหมุนเฉพาะส่วนที่มีข้อความเอียง
+#     for contour in contours:
+#         # ใช้ cv2.minAreaRect เพื่อหามุมเอียง
+#         rect = cv2.minAreaRect(contour)
+#         angle = rect[2]
+        
+#         if angle < -10:
+#             angle = 45 + angle
+#         else:
+#             angle = angle
+        
+#         # หมุนภาพตามมุมที่คำนวณได้
+#         (h, w) = image.shape[:2]
+#         center = (w // 2, h // 2)
+#         matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+#         rotated_image = cv2.warpAffine(image, matrix, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    
+#     return rotated_image
+
+# # ฟังก์ชันที่ใช้ทำ OCR จากรูปภาพ โดยใช้ทั้ง EasyOCR และ Tesseract
 # def ocr_from_image(image_path):
-#     # โหลดรูปภาพจากพาธที่ส่งเข้ามา
 #     image = cv2.imread(image_path)
     
-#     # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
 #     if image is None:
 #         print("Error: Image not found or cannot be loaded")
 #         return
     
-#     # การแปลงภาพเป็นโทนขาวดำ (Grayscale) เพื่อให้ OCR อ่านได้ดีขึ้น
-#     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#     # แก้ไขมุมเอียงของข้อความ
+#     corrected_image = correct_text_skew(image)
     
-#     # ปรับแสงและคอนทราสต์ของภาพ
-#     contrast_image = cv2.convertScaleAbs(gray_image, alpha=2.0, beta=50)
+#     # แสดงภาพที่หมุนแล้ว
+#     plt.imshow(cv2.cvtColor(corrected_image, cv2.COLOR_BGR2RGB))
+#     plt.title("Corrected Image with Deskewed Text")
+#     plt.axis('off')
+#     plt.show()
     
-#     # การลดความเบลอ (Denoising) ด้วยวิธีที่ดีกว่า
-#     denoised_image = cv2.fastNlMeansDenoising(contrast_image, None, 30, 7, 21)
+#     # ใช้ EasyOCR ในการทำ OCR
+#     reader = easyocr.Reader(['th', 'en'])  # อ่านภาษาไทยและอังกฤษ
+#     result_easyocr = reader.readtext(corrected_image, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
     
-#     # ใช้การเพิ่มความคมชัด (Sharpening) ระมัดระวัง
-#     kernel = np.array([[-1, -1, -1], [-1, 9,-1], [-1, -1, -1]])
-#     sharpened_image = cv2.filter2D(denoised_image, -1, kernel)
-    
-#     # แปลงภาพจาก BGR (OpenCV โหลดเป็น BGR) เป็น RGB
-#     image_rgb = cv2.cvtColor(sharpened_image, cv2.COLOR_GRAY2RGB)
-    
-#     # ใช้ easyocr ในการแปลงภาพเป็นข้อความ
-#     reader = easyocr.Reader(['th', 'en'])  # เพิ่มภาษาไทยและภาษาอังกฤษ
-#     result = reader.readtext(image_rgb, detail=0)  # detail=0 จะทำให้ผลลัพธ์เป็นข้อความเท่านั้น
-
-#     if result:
-#         print("ข้อความที่พบในภาพ:")
-#         for text in result:
+#     if result_easyocr:
+#         print("ข้อความที่พบในภาพจาก EasyOCR:")
+#         for text in result_easyocr:
 #             print(text)
 #     else:
-#         print("ไม่พบข้อความในภาพ")
+#         print("ไม่พบข้อความในภาพจาก EasyOCR")
 
-# # ทดสอบการใช้งาน
+#     # ใช้ Tesseract OCR ในการอ่านข้อความจากภาพที่หมุนแล้ว
+#     result_tesseract = pytesseract.image_to_string(corrected_image, lang='tha+eng')
+    
+#     if result_tesseract.strip():
+#         print("\nข้อความที่พบในภาพจาก Tesseract OCR:")
+#         print(result_tesseract)
+#     else:
+#         print("ไม่พบข้อความในภาพจาก Tesseract OCR")
 # if __name__ == "__main__":
-#     # รับพาธของรูปภาพจากผู้ใช้หรือจากตัวแปรอื่น
-#     image_path = "C:\\Users\\Janejojija\\Downloads\\traffic-sign-illustrate.jpg"  # ใช้พาธที่ถูกต้อง
+#      image_path = "C:\\Users\\Janejojija\\Downloads\\traffic-sign-illustrate.jpg"
+#     image_path = "C:\\Users\\Janejojija\\Downloads\\GApIOu9bgAA1Fc6.jpg"
 #     ocr_from_image(image_path)

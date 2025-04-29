@@ -205,19 +205,18 @@ CORS(app, origins=["http://localhost:5173"])
 
 # Load original models EXACTLY as in your code
 fasttext_model = KeyedVectors.load_word2vec_format(
-    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
+    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
     binary=False
 )
 vectorizer = joblib.load(
-    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
+    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
 )
 lstm_model = tf.keras.models.load_model(
-    r"C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
+    r"C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
     compile=False
 )
 lstm_model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-# OCR function using both EasyOCR and Tesseract
 # OCR function using both EasyOCR and Tesseract with image enhancement
 def ocr_from_image(image):
     # Check if image is loaded
@@ -310,6 +309,7 @@ def preprocess_and_extract_features(text):
 # Load Gradio Clients
 bert_client = Client("EXt1/BERT-thainews-classification")
 mdeberta_client = Client("EXt1/Mdeberta_v3_Thainews_Classification")
+reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
 
 def predict_with_bert(text):
     result = bert_client.predict(text=text, api_name="/predict")
@@ -336,6 +336,19 @@ def predict_with_lstm(text):
     probability = float(prediction[0][dominant_index])
     return dominant_label, probability
 
+label_map_for_reasoning = {
+    "Real News": "ข่าวจริง",
+    "Fake News": "ข่าวปลอม",
+}
+
+def get_reasoning(text, label):
+    try:
+        response = reasoning_client.predict(text, label, api_name="/predict")
+        return response
+    except Exception as e:
+        return f"Error generating reasoning: {str(e)}"
+    
+
 def majority_vote(predictions):
     """
     predictions: list of tuples like [('Fake News', 0.81), ('Fake News', 0.85), ('True News', 0.40)]
@@ -361,21 +374,22 @@ def predict():
         return jsonify({"error": "Text input is required"}), 400
 
     try:
-        # Predictions from all 3 models
+        # Get predictions
         lstm_label, lstm_prob = predict_with_lstm(user_input)
         bert_label, bert_prob = predict_with_bert(user_input)
         mdeberta_label, mdeberta_prob = predict_with_mdeberta(user_input)
 
-        # Ensemble
         all_predictions = [
             (lstm_label, lstm_prob),
             (bert_label, bert_prob),
             (mdeberta_label, mdeberta_prob)
         ]
-
         final_label, final_avg_prob = majority_vote(all_predictions)
 
-        # Response with final prediction
+        # Get reasoning from Typhoon 7B
+        label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
+        reason = get_reasoning(user_input, label_for_reasoning)
+
         response = {
             "prediction": final_label,
             "probability": round(final_avg_prob, 4),
@@ -384,13 +398,15 @@ def predict():
                 "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
                 "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
                 "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
-            }
+            },
+            "reasoning": reason
         }
 
         return jsonify(response)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

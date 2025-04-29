@@ -671,6 +671,7 @@ import { useTranslation } from "react-i18next";
 
 const ResultWithChart = () => {
   const location = useLocation();
+  console.log(location.state);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -679,8 +680,15 @@ const ResultWithChart = () => {
     newsType, // จะเป็น "Real News", "Fake News", หรือ "Suspicious News"
     probability = 0, // default to 0 if not provided
     summary = "",
+    reasoning = "",
   } = location.state || {};
 
+  useEffect(() => {
+    if (location.state) {
+      console.log("Latest Data:", location.state); // Logs the latest state data
+    }
+  }, [location.state]);
+  
   // Fallback UI if page is accessed directly
   if (!location.state) {
     return (
@@ -791,7 +799,7 @@ const ResultWithChart = () => {
                 <p>{summary}</p>
               </div>
               <div className="summary-content">
-                <p>methionylglutaminyl... (long text)</p>
+                <p>{reasoning}</p>
               </div>
             </div>
           </div>

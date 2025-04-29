@@ -229,6 +229,7 @@ function TextCheck() {
           newsType: result.prediction,
           probability: result.probability,
           summary: result.summary,
+          reasoning: result.reasoning,
         },
       });
     } catch (error) {

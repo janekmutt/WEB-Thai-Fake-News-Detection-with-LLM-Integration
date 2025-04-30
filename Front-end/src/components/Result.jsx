@@ -677,10 +677,11 @@ const ResultWithChart = () => {
 
   const {
     input_text,
-    newsType, // จะเป็น "Real News", "Fake News", หรือ "Suspicious News"
+    newsType, // "Real News", "Fake News", or "Suspicious News"
     probability = 0, // default to 0 if not provided
     summary = "",
     reasoning = "",
+    other_links = [], // Default to empty array if no links
   } = location.state || {};
 
   useEffect(() => {
@@ -688,20 +689,14 @@ const ResultWithChart = () => {
       console.log("Latest Data:", location.state); // Logs the latest state data
     }
   }, [location.state]);
-  
+
   // Fallback UI if page is accessed directly
   if (!location.state) {
     return (
       <>
         <Navbar />
         <div className="result-container">
-          <video
-            className="background-video"
-            src={bluebg7}
-            autoPlay
-            loop
-            muted
-          />
+          <video className="background-video" src={bluebg7} autoPlay loop muted />
           <div className="fallback-message">
             <h1 className="text-3xl font-bold mb-4">{t("not_found")}</h1>
             <p className="text-lg mb-6">{t("please_check_first")}</p>
@@ -719,12 +714,6 @@ const ResultWithChart = () => {
 
   const [gaugeValue, setGaugeValue] = useState(0);
   const targetValue = Math.round(probability * 100); // Convert to percentage
-
-  useEffect(() => {
-    const checkedNewsCount = localStorage.getItem("checkedNewsCount");
-    const updatedCount = checkedNewsCount ? parseInt(checkedNewsCount) + 1 : 1;
-    localStorage.setItem("checkedNewsCount", updatedCount);
-  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -805,12 +794,19 @@ const ResultWithChart = () => {
           </div>
         </div>
 
+        {/* Display related articles here */}
         <div className="reference-container">
           <p className="reference-label">{t("related_article")}</p>
           <div className="reference-box">
-            <a href="#" target="_blank" rel="noopener noreferrer">
-              {t("related_article_link")}
-            </a>
+            {other_links && other_links.length > 0 ? (
+              other_links.map((link, index) => (
+                <a key={index} href={link} target="_blank" rel="noopener noreferrer">
+                  {t("related_article_link")} {index + 1}
+                </a>
+              ))
+            ) : (
+              <p>{t("no_related_articles")}</p> // Optional: message if no related articles
+            )}
           </div>
         </div>
       </div>

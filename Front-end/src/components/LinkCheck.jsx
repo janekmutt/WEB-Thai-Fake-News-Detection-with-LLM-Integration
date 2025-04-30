@@ -13,28 +13,31 @@ function LinkCheck() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!url.match(/^https:\/\/.*/)) {
       setError(t("error_https")); // ต้องขึ้นต้นด้วย https://
       return;
     }
-
+  
     try {
-      const response = await fetch("http://localhost:5000/api/predict", {
+      const response = await fetch("http://localhost:5000/predict-url", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input_text: url }), // ส่ง URL เป็น input_text
+        body: JSON.stringify({ query: url }), // ส่ง URL เป็น input_text
       });
-
+  
       const result = await response.json();
-
-      // ส่งไปหน้า Result พร้อมข้อมูล
+  
       navigate("/Result", {
         state: {
-          input_text: url,
-          newsType: result.result_news, // real, fake, suspicious
+          input_text: result.title, // used as title too
+          newsType: result.prediction,
+          probability: result.probability,
+          summary: result.summary,
+          reasoning: result.reasoning,
+          other_links: result.other_links,
         },
       });
     } catch (err) {
@@ -42,6 +45,7 @@ function LinkCheck() {
       setError("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
     }
   };
+  
 
   return (
     <>

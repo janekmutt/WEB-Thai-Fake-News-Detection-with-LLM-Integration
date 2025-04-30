@@ -10,3 +10,5 @@ node_modules
 /flask-server/myenv2
 /flask-server/__pycache__
 /flask-server/__pycache__
+flask-server/graphing.ipynb
+/flask-server

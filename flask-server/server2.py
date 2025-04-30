@@ -198,10 +198,14 @@ import numpy as np
 from flask_cors import CORS
 from gradio_client import Client
 import ast
+from webcrawler import ContentExtractor
 import pytesseract
+import asyncio
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
+
+extractor = ContentExtractor()
 
 # Load original models EXACTLY as in your code
 fasttext_model = KeyedVectors.load_word2vec_format(
@@ -403,9 +407,66 @@ def predict():
         }
 
         return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/predict-url", methods=["POST"])
+def predict():
+    data = request.get_json()
+    query = data.get("query", "").strip()
+
+    if not query:
+        return jsonify({"error": "Query input is required"}), 400
+
+    try:
+        # Step 1: Use web crawler to extract content
+        result = asyncio.run(extractor.search_and_extract_top_result(query))
+        
+        if result:
+            # Step 2: Extract title from web crawler result
+            title = result["title"]
+
+            # Step 3: Get predictions using your models
+            lstm_label, lstm_prob = predict_with_lstm(title)
+            bert_label, bert_prob = predict_with_bert(title)
+            mdeberta_label, mdeberta_prob = predict_with_mdeberta(title)
+
+            all_predictions = [
+                (lstm_label, lstm_prob),
+                (bert_label, bert_prob),
+                (mdeberta_label, mdeberta_prob)
+            ]
+
+            # Step 4: Perform majority voting to get final prediction
+            final_label, final_avg_prob = majority_vote(all_predictions)
+
+            # Step 5: Get reasoning from the Typhoon model
+            label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
+            reason = get_reasoning(title, label_for_reasoning)
+
+            # Prepare the response
+            response = {
+                "prediction": final_label,
+                "probability": round(final_avg_prob, 4),
+                "title": title,
+                "input_query": query,
+                "individual_predictions": {
+                    "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
+                    "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
+                    "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
+                },
+                "reasoning": reason
+            }
+
+            return jsonify(response)
+
+        else:
+            return jsonify({"error": "No results found from the web crawler"}), 404
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":

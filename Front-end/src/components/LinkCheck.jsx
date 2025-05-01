@@ -38,6 +38,7 @@ function LinkCheck() {
           summary: result.summary,
           reasoning: result.reasoning,
           other_links: result.other_links,
+          top_content: result.top_content,
         },
       });
     } catch (err) {

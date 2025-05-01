@@ -671,26 +671,24 @@ import { useTranslation } from "react-i18next";
 
 const ResultWithChart = () => {
   const location = useLocation();
-  console.log(location.state);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const {
     input_text,
     newsType, // "Real News", "Fake News", or "Suspicious News"
-    probability = 0, // default to 0 if not provided
+    probability = 0,
     summary = "",
     reasoning = "",
-    other_links = [], // Default to empty array if no links
+    other_links = [], // [{ title: "...", link: "..." }, ...]
   } = location.state || {};
 
   useEffect(() => {
     if (location.state) {
-      console.log("Latest Data:", location.state); // Logs the latest state data
+      console.log("Latest Data:", location.state);
     }
   }, [location.state]);
 
-  // Fallback UI if page is accessed directly
   if (!location.state) {
     return (
       <>
@@ -713,7 +711,7 @@ const ResultWithChart = () => {
   }
 
   const [gaugeValue, setGaugeValue] = useState(0);
-  const targetValue = Math.round(probability * 100); // Convert to percentage
+  const targetValue = Math.round(probability * 100);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -724,7 +722,7 @@ const ResultWithChart = () => {
         }
         return prev + 1;
       });
-    }, 20); // Update gauge value gradually
+    }, 20);
     return () => clearInterval(interval);
   }, [targetValue]);
 
@@ -735,12 +733,12 @@ const ResultWithChart = () => {
   };
 
   const colorMap = {
-    "Real News": "#23af42", // Green
-    "Fake News": "#dd3c3c", // Red
-    "Suspicious News": "#c6b538", // Yellow
+    "Real News": "#23af42",
+    "Fake News": "#dd3c3c",
+    "Suspicious News": "#c6b538",
   };
 
-  const gaugeColor = colorMap[newsType] || "#666"; // Default to gray if not found
+  const gaugeColor = colorMap[newsType] || "#666";
   const resultText = labelMap[newsType] || t("suspicious_news");
 
   return (
@@ -768,7 +766,7 @@ const ResultWithChart = () => {
                   },
                 }}
                 arcColorFn={() => gaugeColor}
-                text={({ value }) => `${value}%`} // Display percentage
+                text={({ value }) => `${value}%`}
               />
               <div className="gauge-result-text">{resultText}</div>
             </div>
@@ -794,18 +792,27 @@ const ResultWithChart = () => {
           </div>
         </div>
 
-        {/* Display related articles here */}
+        {/* Related Articles Section */}
         <div className="reference-container">
           <p className="reference-label">{t("related_article")}</p>
           <div className="reference-box">
             {other_links && other_links.length > 0 ? (
-              other_links.map((link, index) => (
-                <a key={index} href={link} target="_blank" rel="noopener noreferrer">
-                  {t("related_article_link")} {index + 1}
-                </a>
+              other_links.map((item, index) => (
+                <React.Fragment key={index}>
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="reference-link"
+                  >
+                    {index + 1}. {item.title}
+                  </a>
+                  <br />
+                </React.Fragment>
+                
               ))
             ) : (
-              <p>{t("no_related_articles")}</p> // Optional: message if no related articles
+              <p>{t("no_related_articles")}</p>
             )}
           </div>
         </div>

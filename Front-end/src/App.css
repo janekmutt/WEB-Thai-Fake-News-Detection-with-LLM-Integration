@@ -207,6 +207,8 @@
   text-align: left;
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 4px;
+  display: block;
 }
 
 .reference-box a {

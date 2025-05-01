@@ -199,8 +199,11 @@ class ContentExtractor:
         top_content = await self.extract_content_from_url(top_link)
 
         # Get the remaining 4 links (if available)
-        other_links = [r.get("link") for r in organic_results[1:5] if r.get("link")]
-
+        other_links = [
+            {"title": r.get("title"), "link": r.get("link")}
+            for r in organic_results[0:5]
+            if r.get("link") and r.get("title")
+]
         return {
             "title": top_title,
             "link": top_link,

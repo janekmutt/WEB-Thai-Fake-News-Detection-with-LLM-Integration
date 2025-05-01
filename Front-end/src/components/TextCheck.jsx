@@ -230,6 +230,7 @@ function TextCheck() {
           probability: result.probability,
           summary: result.summary,
           reasoning: result.reasoning,
+          top_content: result.top_content,
         },
       });
     } catch (error) {

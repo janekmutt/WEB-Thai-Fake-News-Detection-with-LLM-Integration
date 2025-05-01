@@ -184,7 +184,7 @@ def majority_vote(predictions):
     return majority_label, average_probability
 
 @app.route("/predict", methods=["POST"])
-def predict_url():
+def predict():
     data = request.get_json()
     user_input = data.get("text", "").strip()
 
@@ -192,6 +192,13 @@ def predict_url():
         return jsonify({"error": "Text input is required"}), 400
 
     try:
+        result = asyncio.run(extractor.search_and_extract_top_result(user_input))
+
+        title = result["title"]
+        top_link = result["link"]
+        top_content = result["content"]
+        other_links = result.get("other_links", [])
+        
         # Get predictions
         lstm_label, lstm_prob = predict_with_lstm(user_input)
         bert_label, bert_prob = predict_with_bert(user_input)
@@ -211,6 +218,9 @@ def predict_url():
         response = {
             "prediction": final_label,
             "probability": round(final_avg_prob, 4),
+            "title": title,
+            "other_links": other_links,
+            "top_content": top_content,
             "input_text": user_input,
             "individual_predictions": {
                 "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
@@ -218,6 +228,7 @@ def predict_url():
                 "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
             },
             "reasoning": reason
+            
         }
 
         return jsonify(response)
@@ -226,7 +237,7 @@ def predict_url():
         return jsonify({"error": str(e)}), 500
     
 @app.route("/predict-url", methods=["POST"])
-def predict():
+def predict_url():
     data = request.get_json()
     query = data.get("query", "").strip()
 
@@ -243,7 +254,7 @@ def predict():
             top_link = result["link"]
             top_content = result["content"]
             other_links = result.get("other_links", [])
-
+    
             # Step 3: Get predictions using your models
             lstm_label, lstm_prob = predict_with_lstm(title)
             bert_label, bert_prob = predict_with_bert(title)
@@ -266,8 +277,9 @@ def predict():
             response = {
                 "prediction": final_label,
                 "probability": round(final_avg_prob, 4),
-                "title": title,
-                "other_links": other_links,
+                "title": title,             #Input for this Path
+                "other_links": other_links, #Related LInks Displayed
+                "top_content": top_content, #Summary
                 "input_query": query,
                 "individual_predictions": {
                     "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},

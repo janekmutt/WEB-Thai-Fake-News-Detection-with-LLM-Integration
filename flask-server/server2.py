@@ -42,7 +42,7 @@ def get_db_connection():
         conn = pyodbc.connect(
             'DRIVER={ODBC Driver 17 for SQL Server};'
             'SERVER=LAPTOP-H0CKMDVC\SQLEXPRESS;'  # เปลี่ยนชื่อเซิร์ฟเวอร์ MSSQL ของคุณ
-            'DATABASE=fake_news_predictions_result8;'  # เปลี่ยนชื่อฐานข้อมูล
+            'DATABASE=fake_news_predictions_result9;'  # เปลี่ยนชื่อฐานข้อมูล
             'Trusted_Connection=yes;'
         )
         print("✅ DB connected")
@@ -61,24 +61,25 @@ def init_db():
                 id INT PRIMARY KEY IDENTITY(1,1),
                 model_input NVARCHAR(MAX),      -- ข้อความที่ผู้ใช้ป้อน
                 other_links_json NVARCHAR(MAX),    -- ลิงค์ที่เกี่ยวข้อง (สามารถเก็บหลายลิงค์)
-                top_content NVARCHAR(MAX),    -- สรุปเนื้อหาของข่าว
                 final_avg_prob FLOAT,         -- ความน่าจะเป็นโดยรวมจากการทำนาย
                 final_label NVARCHAR(MAX),
-                timestamp DATETIME DEFAULT GETDATE(),  -- เวลาที่บันทึกข้อมูล
+                timestamp DATETIME DEFAULT GETDATE(),  -- เวลาที่บันทึกข้อมูล,
+                reason NVARCHAR(MAX),      -- เหตุผลที่ทำนาย
+                summary NVARCHAR(MAX)        -- สรุปเนื้อหาข่าว
             )
         ''')
         conn.commit()
         print("✅ Table created or already exists")
 
 # ฟังก์ชันบันทึกข้อมูลการทำนายลงฐานข้อมูล
-def save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label):
+def save_prediction_to_db(model_input, final_avg_prob, other_links_json,  final_label,reason,summary):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
         # เพิ่มข้อมูลการทำนายลงในตาราง prediction_history
-        cursor.execute('''INSERT INTO prediction_history (model_input, final_avg_prob, other_links_json, top_content, final_label) VALUES (?, ?, ?, ?, ?)''', 
-                       (model_input, final_avg_prob, other_links_json, top_content, final_label))
+        cursor.execute('''INSERT INTO prediction_history (model_input, final_avg_prob, other_links_json,final_label,reason,summary) VALUES (?, ?, ?, ?, ?, ?)''', 
+                       (model_input, final_avg_prob, other_links_json, final_label,reason,summary))
         conn.commit()
         print("✅ Prediction saved to database")
     except Exception as e:
@@ -94,7 +95,7 @@ def get_history():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT model_input, final_avg_prob, other_links_json, top_content, final_label, timestamp
+            SELECT model_input, final_avg_prob, other_links_json,final_label, timestamp,reason,summary
             FROM prediction_history
             ORDER BY id DESC
         """)
@@ -104,14 +105,15 @@ def get_history():
         # เตรียมข้อมูลผลลัพธ์ที่ดึงมาจากฐานข้อมูล
         history = []
         for row in rows:
-            if len(row) == 6:  # ตรวจสอบว่ามี 6 คอลัมน์ในแต่ละแถว
+            if len(row) == 7:  # ตรวจสอบว่ามี 6 คอลัมน์ในแต่ละแถว
                 history.append({
                     "model_input": row[0],
                     "final_avg_prob": row[1],
                     "other_links_json": row[2],
-                    "top_content": row[3],
-                    "final_label": row[4],
-                    "timestamp": row[5],
+                    "final_label": row[3],
+                    "timestamp": row[4],
+                    "reason": row[5],
+                    "summary": row[6]
                 })
             else:
                 print(f"Skipping row with incorrect number of columns: {len(row)}")
@@ -217,7 +219,8 @@ def preprocess_and_extract_features(text):
 # Load Gradio Clients
 bert_client = Client("EXt1/BERT-thainews-classification")
 mdeberta_client = Client("EXt1/Mdeberta_v3_Thainews_Classification")
-# reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
+reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
+summary_client = Client("EXt1/KMUTT-CPE-Thai-Summarizer")
 
 def predict_with_bert(text):
     result = bert_client.predict(text=text, api_name="/predict")
@@ -255,6 +258,13 @@ def get_reasoning(text, label):
         return response
     except Exception as e:
         return f"Error generating reasoning: {str(e)}"
+    
+def get_summary(text):
+    try:
+        response = summary_client.predict(text=text, api_name="/predict")
+        return response
+    except Exception as e:
+        return f"Error generating summary: {str(e)}"
     
 
 def majority_vote(predictions):
@@ -308,9 +318,10 @@ def predict():
         # Get reasoning from Typhoon 7B
         label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
         reason = get_reasoning(model_input, label_for_reasoning)
+        summary = get_summary(top_content)
 
         # บันทึกข้อมูลการทำนายลงฐานข้อมูล
-        save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label)
+        save_prediction_to_db(model_input, final_avg_prob, other_links_json, final_label, reason, summary)
 
         # ส่งข้อมูลที่ทำนายกลับไปยังผู้ใช้
         response = {
@@ -325,7 +336,8 @@ def predict():
                 "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
                 "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
             },
-            "reasoning": reason
+            "reasoning": reason,
+            "summary": summary
         }
 
         return jsonify(response)
@@ -373,9 +385,10 @@ def predict_url():
             # Step 5: Get reasoning from the Typhoon model
             label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
             reason = get_reasoning(model_input, label_for_reasoning)
+            summary = get_summary(top_content)
 
             # Step 6: Save the prediction to the database
-            save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label)
+            save_prediction_to_db(model_input, final_avg_prob, other_links_json, final_label, reason, summary)
 
             # Prepare the response
             response = {
@@ -390,7 +403,8 @@ def predict_url():
                     "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
                     "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
                 },
-                "reasoning": reason
+            "reasoning": reason,
+            "summary": summary
             }
 
             return jsonify(response)

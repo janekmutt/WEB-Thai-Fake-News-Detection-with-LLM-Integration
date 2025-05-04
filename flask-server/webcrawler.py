@@ -162,9 +162,9 @@ class ContentExtractor:
                     result.markdown = re.sub(pattern, '', result.markdown, flags=re.MULTILINE)
                 filtered_blocks = [
                     block.strip() for block in result.markdown.split('\n')
-                    if len(block.strip()) >= 30 and not re.match(r'^##+', block.strip())
+                    if len(block.strip()) >= 30 and not re.match(r'^#{1,6}\s', block.strip()) 
                 ]
-                return "Cleaned content:\n" + '\n'.join(filtered_blocks[:10])
+                return "\n" + '\n'.join(filtered_blocks[:10])
             return "No content extracted from the URL."
 
     async def search_and_extract_top_result(self, query):

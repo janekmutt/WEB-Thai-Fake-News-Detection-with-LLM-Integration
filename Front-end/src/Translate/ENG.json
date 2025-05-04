@@ -31,5 +31,6 @@
   "disclaimer_text": "*The analysis may not be entirely accurate, as it depends on the usage of words and linguistic context.*",
   "reasoning": "Reasoning",
   "history": "History",
-  "news_title": "From"
+  "news_title": "From",
+  "back_to_check": "Back to Verify the News"
 }

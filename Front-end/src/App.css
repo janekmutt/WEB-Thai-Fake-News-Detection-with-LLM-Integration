@@ -24,7 +24,7 @@ body {
 
 .result-header {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1350px;
   font-size: 3rem;
   font-weight: 800;
   text-align: left;
@@ -334,6 +334,28 @@ body {
   background-color: #d9dce0; /* สีพื้นหลังเมื่อเมาส์อยู่บนรายการ */
   transform: scale(1.05); /* ขยายเล็กน้อยเพื่อให้ดูน่าสนใจ */
 }
+.button-group {
+  margin-top: 1rem; /* mt-4 */
+  display: flex;
+  flex-direction: row;
+  gap: 1rem; /* gap-4 */
+  justify-content: center;
+}
+
+.back-button {
+  background: linear-gradient(to right, #009ffd, #6a93cb);
+  color: white;
+  font-size: 0.875rem; /* text-sm */
+  padding: 0.375rem 1rem; /* py-1.5 px-4 */
+  border-radius: 3rem; /* rounded-md */
+  transition: opacity 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  opacity: 0.9;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -613,8 +635,16 @@ body {
 
 /* Navbar section */
 .navbar {
-  background-color: #0066b2; /* Blue */
-  height: 104px;
+  /* background-color: #0066b2; Blue */
+  background: linear-gradient(
+    to left,
+    #95fcf2,
+    #6ec7e2,
+    #4691d3,
+    #225ec4,
+    #063d8c
+  );
+  height: 80px;
 }
 
 .navbar-container {
@@ -622,7 +652,7 @@ body {
   justify-content: flex-start;
   align-items: center;
   height: 100%;
-  padding: 0 2rem; /* px-8 */
+  padding: 0 2rem;
 }
 
 .navbar-menu {

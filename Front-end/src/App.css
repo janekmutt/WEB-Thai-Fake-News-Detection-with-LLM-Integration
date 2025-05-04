@@ -531,10 +531,10 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding-top: 5rem; /* เพิ่มระยะห่างด้านบนเพื่อไม่ให้กล่องข้อความเกยกับส่วนบน */
+  padding-top: 2rem; /* เพิ่มระยะห่างด้านบนเพื่อไม่ให้กล่องข้อความเกยกับส่วนบน */
 }
 
-.upload-button {
+/* .upload-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -553,6 +553,86 @@ body {
   outline: none;
   border-color: #1e90ff;
   box-shadow: 0 0 5px rgba(30, 144, 255, 0.8);
+} */
+.upload-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* ระยะห่างระหว่างปุ่ม */
+  margin-top: -1rem;
+  margin-bottom: 2rem;
+}
+
+.upload-button {
+  background: #ffffff;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+  color: #1560bd;
+  font-size: 36px;
+  padding: 1.5rem 3rem;
+  font-weight: semi-bold;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.upload-button input {
+  display: none;
+}
+
+.upload-button:hover {
+  background-color: #f0f8ff;
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.2);
+}
+
+.modernup-input-button {
+  background: linear-gradient(to right, #db6e85, #e11d48);
+  border: none;
+  border-radius: 50%;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.modernup-input-button img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+.modernup-input-button:hover {
+  transform: scale(1.05);
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff; /* ✅ เปลี่ยนตรงนี้ */
+  border-radius: 50px; /* ✅ เปลี่ยนตรงนี้ */
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1); /* ✅ เปลี่ยนตรงนี้ */
+  color: #000000;
+  font-size: 25px; /* ✅ จาก 18px → 36px */
+  padding: 1rem 2rem;
+  font-weight: semi-bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-button:hover {
+  background-color: #f0f8ff;
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.2);
+  transform: scale(1.03);
+}
+
+.upload-button input {
+  display: none;
 }
 
 .upload-button svg {
@@ -569,27 +649,41 @@ body {
   max-height: 350px;
   overflow-y: auto;
   object-fit: cover;
-  margin: 0.75rem 0 0.5rem;
+  margin: 0 0 0.75rem;
 }
 /* กล่องข้อความ (textarea) */
+.ocr-textarea-wrapper {
+  position: relative;
+  background: #ffffff;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+  padding: 0.75rem 1rem;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
 .ocr-textarea {
+  border: none;
+  outline: none;
+  resize: none;
   padding: 1rem 1rem 1rem;
   width: 800px; /* ทำให้กล่องข้อความกว้างเต็มพื้นที่ */
   font-weight: 300; /* กำหนดน้ำหนักตัวอักษร */
   background-color: #f0f8ff; /* สีพื้นหลังของกล่อง */
-  border: 3px solid #1560bd; /* ขอบกล่องเป็นสีน้ำเงิน */
-  border-radius: 20px; /* ขอบกลม */
-  min-height: 150px; /* กำหนดความสูงขั้นต่ำ */
+  min-height: 80px; /* กำหนดความสูงขั้นต่ำ */
   max-height: 200px; /* กำหนดความสูงสูงสุด */
   resize: vertical; /* อนุญาตให้ปรับขนาดเฉพาะในแนวตั้ง */
-  overflow: auto; /* เปิดการเลื่อน (scroll) ถ้าข้อความยาวเกินขนาด */
-  color: #737373; /* สีของตัวอักษร */
+  border-radius: 30px;
+  background: transparent;
+  color: #333;
+  line-height: 1.5;
+  overflow: auto;
 
   /* การตั้งค่าสไตล์สำหรับ scrollbar */
-  scrollbar-width: thin; /* สำหรับ Firefox */
-  scrollbar-color: #1e90ff #f0f8ff; /* สี scrollbar สำหรับ Firefox */
-  min-width: 400px; /* กำหนดความกว้างขั้นต่ำ */
-  max-width: 100%; /* จำกัดความกว้างสูงสุด */
+  scrollbar-width: thin;
+  scrollbar-color: #1e90ff #f0f8ff;
+  min-width: 400px;
+  max-width: 100%;
 }
 
 /* สไตล์สำหรับ scrollbar ใน Webkit Browsers (Chrome, Safari) */
@@ -983,4 +1077,84 @@ body {
   .about-header-text {
     font-size: 2rem; /* max-md:text-4xl */
   }
+}
+
+.modern-input-container {
+  display: flex;
+  align-items: flex-start;
+  background: #ffffff;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+  padding: 0.75rem 1rem;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.modern-textarea::placeholder {
+  color: #7c8db5;
+}
+
+.modern-input-button:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.modern-input-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+}
+
+.modern-input-wrapper {
+  position: relative;
+  background: #ffffff;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+  padding: 0.75rem 1rem;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.modern-textarea {
+  border: none;
+  outline: none;
+  resize: none;
+  width: 100%;
+  min-height: 40px;
+  max-height: 300px;
+  padding: 0.5rem 3.5rem 0.5rem 1rem; /* เพิ่ม padding ขวาเผื่อปุ่ม */
+  font-size: 1rem;
+  border-radius: 30px;
+  background: transparent;
+  color: #333;
+  line-height: 1.5;
+  overflow-y: hidden;
+}
+
+.modern-input-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: linear-gradient(to right, #db6e85, #e11d48);
+  border: none;
+  border-radius: 50%;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.modern-input-button:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.modern-input-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }

@@ -32,5 +32,7 @@
   "reasoning": "Reasoning",
   "history": "History",
   "news_title": "From",
-  "back_to_check": "Back to Verify the News"
+  "back_to_check": "Back to Verify the News",
+  "please_wait": "Processing, please wait...",
+  "seconds": "seconds"
 }

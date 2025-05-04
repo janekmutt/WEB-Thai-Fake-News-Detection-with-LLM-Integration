@@ -28,5 +28,8 @@
   "not_found": "Not Found",
   "please_check_first": "กรุณาตรวจสอบข่าวก่อนเข้าสู่หน้านี้",
   "back_to_home": "Back to Home page",
-  "disclaimer_text": "*The analysis may not be entirely accurate, as it depends on the usage of words and linguistic context.*"
+  "disclaimer_text": "*The analysis may not be entirely accurate, as it depends on the usage of words and linguistic context.*",
+  "reasoning": "Reasoning",
+  "history": "History",
+  "news_title": "From"
 }

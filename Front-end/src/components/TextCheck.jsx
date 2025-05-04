@@ -231,6 +231,7 @@ function TextCheck() {
           summary: result.summary,
           reasoning: result.reasoning,
           top_content: result.top_content,
+          other_links: result.other_links,
         },
       });
     } catch (error) {

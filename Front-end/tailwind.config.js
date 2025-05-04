@@ -50,9 +50,10 @@ export default {
         custom: "1024px", // ความสูงที่ต้องการ
       },
       fontFamily: {
-        inter: ["Inter"],
+        prompt: ["Prompt", "sans-serif"],
+        roboto: ["Roboto", "sans-serif"],
       },
     },
-    plugins: [],
   },
+  plugins: [],
 };

@@ -488,7 +488,11 @@ function PhotoCheck() {
         state: {
           input_text: ocrText,
           newsType: result.prediction,
-          probability: result.probability, // ส่งค่า probability ไปที่ Result.jsx
+          probability: result.probability,
+          summary: result.summary,
+          reasoning: result.reasoning,
+          top_content: result.top_content,
+          other_links: result.other_links,
         },
       });
     } catch (err) {

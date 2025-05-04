@@ -1,3 +1,6 @@
+body {
+  font-family: "Prompt", "Roboto", sans-serif;
+}
 /* Result Section */
 .result-container {
   position: relative;
@@ -219,6 +222,118 @@
 .reference-box a:hover {
   text-decoration: underline;
 }
+.history-toggle-button {
+  display: flex;
+  align-items: center;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  font-weight: bold;
+  padding: 0.75rem 4rem;
+}
+
+.history-toggle-button svg {
+  margin-right: 8px;
+}
+
+.history-button-container {
+  position: absolute;
+  top: 10px;
+  right: 35px;
+}
+
+.history-button {
+  display: flex;
+  align-items: center;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.history-button:hover {
+  background-color: #0056b3;
+}
+
+.history-button svg {
+  margin-right: 8px;
+}
+
+.history-panel {
+  position: fixed;
+  right: 0;
+  top: 0; /* ปรับให้แถบประวัติเริ่มจากด้านบนสุด */
+  background-color: #f0f0f0;
+  width: 300px;
+  height: 100%; /* ให้ความสูงของแถบเต็มความสูงของหน้าจอ */
+  padding: 20px;
+  box-shadow: -2px 0 5px rgba(128, 113, 113, 0.1);
+  overflow-y: auto;
+  z-index: 100;
+  border-left: 2px solid #ddd;
+  transform: translateX(100%); /* ซ่อนแถบไว้ทางขวา */
+  transition: transform 0.3s ease-out; /* เพิ่ม transition เพื่อให้แถบเลื่อนเข้า/ออก */
+}
+
+.history-panel.show {
+  transform: translateX(0); /* ทำให้แถบประวัติเคลื่อนออกมาจากขวา */
+}
+
+/* ปุ่มปิด history panel */
+.close-history-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #000;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-history-button:hover {
+  color: #ff0000;
+}
+
+.history-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.history-panel h3 {
+  font-size: 1.5rem;
+}
+
+.history-panel ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.history-panel ul li {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+.history-item {
+  padding: 10px;
+  border-radius: 20px; /* ทำให้ขอบมน */
+  cursor: pointer; /* แสดงว่าเป็นตัวเลือกที่คลิกได้ */
+  transition: background-color 0.3s, transform 0.3s; /* เพิ่มการเปลี่ยนแปลงค่อยๆ */
+}
+
+/* เมื่อเมาส์เลื่อนมาบนรายการ */
+.history-item:hover {
+  background-color: #d9dce0; /* สีพื้นหลังเมื่อเมาส์อยู่บนรายการ */
+  transform: scale(1.05); /* ขยายเล็กน้อยเพื่อให้ดูน่าสนใจ */
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -406,7 +521,6 @@
   border-radius: 50px;
   color: black;
   font-size: 20px;
-  /* font-weight: bold; */
   padding: 0.75rem 1.25rem;
   cursor: pointer;
   margin: 0 auto;

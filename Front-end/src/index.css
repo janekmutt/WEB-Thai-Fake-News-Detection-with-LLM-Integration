@@ -1,5 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+/* ✅ โหลด Prompt, Inter, Roboto ให้ครบ */
+@import url("https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
+/* ✅ Tailwind base styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ✅ ตั้งฟอนต์หลัก: Prompt → Roboto → sans-serif */
+body {
+  font-family: "Prompt", "Roboto", sans-serif;
+}

@@ -15,6 +15,7 @@ import PhotoCheck from "./components/PhotoCheck.jsx";
 import LinkCheck from "./components/LinkCheck.jsx";
 import About from "./components/About.jsx";
 import Result from "./components/Result.jsx";
+import NewsHis from "./components/NewsHis";
 
 const router = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
   {
     path: "/Result",
     element: <Result />,
+  },
+  {
+    path: "/NewsHis",
+    element: <NewsHis />,
   },
 ]);
 

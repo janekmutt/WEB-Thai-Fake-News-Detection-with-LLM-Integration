@@ -13,8 +13,9 @@ from flask_cors import CORS
 from gradio_client import Client
 import ast
 from webcrawler import ContentExtractor
-import pytesseract
 import asyncio
+import pyodbc
+import json
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
@@ -23,17 +24,113 @@ extractor = ContentExtractor()
 
 # Load original models EXACTLY as in your code
 fasttext_model = KeyedVectors.load_word2vec_format(
-    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
+    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\gensim_fasttext_3000_vec300_e500_mc1.bin',
     binary=False
 )
 vectorizer = joblib.load(
-    r'C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
+    r'C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\vectorizer.pkl'
 )
 lstm_model = tf.keras.models.load_model(
-    r"C:\Users\cmanw\OneDrive\Documents\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
+    r"C:\Users\Janejojija\Documents\Thesis3\WEB-Thai-Fake-News-Detection-with-LLM-Integration\Model_Development\DL_model\best_lstm_model_2025.h5",
     compile=False
 )
 lstm_model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# ฟังก์ชันการเชื่อมต่อกับฐานข้อมูล MSSQL
+def get_db_connection():
+    try:
+        conn = pyodbc.connect(
+            'DRIVER={ODBC Driver 17 for SQL Server};'
+            'SERVER=LAPTOP-H0CKMDVC\SQLEXPRESS;'  # เปลี่ยนชื่อเซิร์ฟเวอร์ MSSQL ของคุณ
+            'DATABASE=fake_news_predictions_result8;'  # เปลี่ยนชื่อฐานข้อมูล
+            'Trusted_Connection=yes;'
+        )
+        print("✅ DB connected")
+        return conn
+    except Exception as e:
+        print("❌ DB connection error:", e)
+        raise
+
+# ฟังก์ชันสำหรับสร้างตารางในฐานข้อมูล
+def init_db():
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='prediction_history' AND xtype='U')
+            CREATE TABLE prediction_history (
+                id INT PRIMARY KEY IDENTITY(1,1),
+                model_input NVARCHAR(MAX),      -- ข้อความที่ผู้ใช้ป้อน
+                other_links_json NVARCHAR(MAX),    -- ลิงค์ที่เกี่ยวข้อง (สามารถเก็บหลายลิงค์)
+                top_content NVARCHAR(MAX),    -- สรุปเนื้อหาของข่าว
+                final_avg_prob FLOAT,         -- ความน่าจะเป็นโดยรวมจากการทำนาย
+                final_label NVARCHAR(MAX),
+                timestamp DATETIME DEFAULT GETDATE(),  -- เวลาที่บันทึกข้อมูล
+            )
+        ''')
+        conn.commit()
+        print("✅ Table created or already exists")
+
+# ฟังก์ชันบันทึกข้อมูลการทำนายลงฐานข้อมูล
+def save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # เพิ่มข้อมูลการทำนายลงในตาราง prediction_history
+        cursor.execute('''INSERT INTO prediction_history (model_input, final_avg_prob, other_links_json, top_content, final_label) VALUES (?, ?, ?, ?, ?)''', 
+                       (model_input, final_avg_prob, other_links_json, top_content, final_label))
+        conn.commit()
+        print("✅ Prediction saved to database")
+    except Exception as e:
+        print("❌ Error saving prediction to database:", e)
+    finally:
+        conn.close()
+
+# ฟังก์ชันดึงข้อมูลประวัติการทำนายจากฐานข้อมูล
+@app.route("/get-history", methods=["GET"])
+def get_history():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT model_input, final_avg_prob, other_links_json, top_content, final_label, timestamp
+            FROM prediction_history
+            ORDER BY id DESC
+        """)
+
+        rows = cursor.fetchall()
+
+        # เตรียมข้อมูลผลลัพธ์ที่ดึงมาจากฐานข้อมูล
+        history = []
+        for row in rows:
+            if len(row) == 6:  # ตรวจสอบว่ามี 6 คอลัมน์ในแต่ละแถว
+                history.append({
+                    "model_input": row[0],
+                    "final_avg_prob": row[1],
+                    "other_links_json": row[2],
+                    "top_content": row[3],
+                    "final_label": row[4],
+                    "timestamp": row[5],
+                })
+            else:
+                print(f"Skipping row with incorrect number of columns: {len(row)}")
+
+        # ตรวจสอบข้อมูลที่ดึงมาจากฐานข้อมูล
+        print("History data:", history)
+
+        # แปลง `other_links_json` กลับเป็น list หรือ tuple
+        for item in history:
+            item["other_links"] = json.loads(item["other_links_json"])  # แปลงเป็น list
+            # หรือถ้าต้องการให้เป็น tuple
+            item["other_links"] = tuple(item["other_links"])  # แปลงเป็น tuple
+
+        conn.close()
+
+        return jsonify(history), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # OCR function using both EasyOCR and Tesseract with image enhancement
 def ocr_from_image(image):
@@ -55,14 +152,7 @@ def ocr_from_image(image):
 
     easyocr_text = " ".join(result_easyocr).strip()
 
-    # Tesseract OCR
-    result_tesseract = pytesseract.image_to_string(enhanced_img, lang='tha+eng')
-    tesseract_text = result_tesseract.strip()
-
-    # รวมข้อความที่ได้จากทั้งสอง OCR
-    combined_text = (easyocr_text + " " + tesseract_text).strip()
-
-    return combined_text, None
+    return easyocr_text, None
 
 
 @app.route("/ocr", methods=["POST"])
@@ -187,22 +277,26 @@ def majority_vote(predictions):
 def predict():
     data = request.get_json()
     user_input = data.get("text", "").strip()
+    model_input = user_input
 
     if not user_input:
         return jsonify({"error": "Text input is required"}), 400
 
     try:
-        result = asyncio.run(extractor.search_and_extract_top_result(user_input))
-
+        # ดึงผลลัพธ์จาก Web Crawler
+        result = asyncio.run(extractor.search_and_extract_top_result(model_input))
         title = result["title"]
         top_link = result["link"]
         top_content = result["content"]
         other_links = result.get("other_links", [])
-        
+
+        # แปลง `other_links` เป็น JSON string
+        other_links_json = json.dumps(other_links)
+
         # Get predictions
-        lstm_label, lstm_prob = predict_with_lstm(user_input)
-        bert_label, bert_prob = predict_with_bert(user_input)
-        mdeberta_label, mdeberta_prob = predict_with_mdeberta(user_input)
+        lstm_label, lstm_prob = predict_with_lstm(model_input)
+        bert_label, bert_prob = predict_with_bert(model_input)
+        mdeberta_label, mdeberta_prob = predict_with_mdeberta(model_input)
 
         all_predictions = [
             (lstm_label, lstm_prob),
@@ -213,8 +307,12 @@ def predict():
 
         # Get reasoning from Typhoon 7B
         label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
-        reason = get_reasoning(user_input, label_for_reasoning)
+        reason = get_reasoning(model_input, label_for_reasoning)
 
+        # บันทึกข้อมูลการทำนายลงฐานข้อมูล
+        save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label)
+
+        # ส่งข้อมูลที่ทำนายกลับไปยังผู้ใช้
         response = {
             "prediction": final_label,
             "probability": round(final_avg_prob, 4),
@@ -228,37 +326,40 @@ def predict():
                 "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
             },
             "reasoning": reason
-            
         }
 
         return jsonify(response)
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
 @app.route("/predict-url", methods=["POST"])
 def predict_url():
     data = request.get_json()
-    query = data.get("query", "").strip()
+    user_input = data.get("query", "").strip()
 
-    if not query:
+    if not user_input:
         return jsonify({"error": "Query input is required"}), 400
 
     try:
         # Step 1: Use web crawler to extract content
-        result = asyncio.run(extractor.search_and_extract_top_result(query))
+        result = asyncio.run(extractor.search_and_extract_top_result(user_input))
         
         if result:
             # Step 2: Extract title from web crawler result
             title = result["title"]
+            model_input = title
             top_link = result["link"]
             top_content = result["content"]
             other_links = result.get("other_links", [])
+
+            # แปลง `other_links` เป็น JSON string
+            other_links_json = json.dumps(other_links)
     
             # Step 3: Get predictions using your models
-            lstm_label, lstm_prob = predict_with_lstm(title)
-            bert_label, bert_prob = predict_with_bert(title)
-            mdeberta_label, mdeberta_prob = predict_with_mdeberta(title)
+            lstm_label, lstm_prob = predict_with_lstm(model_input)
+            bert_label, bert_prob = predict_with_bert(model_input)
+            mdeberta_label, mdeberta_prob = predict_with_mdeberta(model_input)
 
             all_predictions = [
                 (lstm_label, lstm_prob),
@@ -271,16 +372,19 @@ def predict_url():
 
             # Step 5: Get reasoning from the Typhoon model
             label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
-            reason = get_reasoning(title, label_for_reasoning)
+            reason = get_reasoning(model_input, label_for_reasoning)
+
+            # Step 6: Save the prediction to the database
+            save_prediction_to_db(model_input, final_avg_prob, other_links_json, top_content, final_label)
 
             # Prepare the response
             response = {
                 "prediction": final_label,
                 "probability": round(final_avg_prob, 4),
-                "title": title,             #Input for this Path
-                "other_links": other_links, #Related LInks Displayed
-                "top_content": top_content, #Summary
-                "input_query": query,
+                "title": title,             # Input for this Path
+                "other_links": other_links, # Related Links Displayed
+                "top_content": top_content, # Summary
+                "input_query": user_input,
                 "individual_predictions": {
                     "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
                     "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
@@ -297,7 +401,6 @@ def predict_url():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)

@@ -82,10 +82,6 @@
 # if __name__ == "__main__":
 #     asyncio.run(main())
 
-
-
-
-
 import asyncio
 import re
 import aiohttp
@@ -97,7 +93,7 @@ from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from googlesearch import search  # Google search package
 from serpapi import GoogleSearch
 import sys
-import streamlit as st
+# import streamlit as st
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())

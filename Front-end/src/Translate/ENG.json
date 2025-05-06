@@ -34,5 +34,7 @@
   "news_title": "From",
   "back_to_check": "Back to Verify the News",
   "please_wait": "Processing, please wait...",
-  "seconds": "seconds"
+  "seconds": "seconds",
+  "no_related_articles": "no related articles",
+  "about": "This web application serves as a fake news detection system, enhanced through an ensemble of three machine learning models: LSTM, BERTA, and MDeBERTa. Additionally, it integrates large language models (LLMs) to generate concise summaries and provide explanatory reasoning, thereby improving user comprehension of the classification results. The system was developed by students from the Department of Computer Engineering, Faculty of Engineering, King Mongkut’s University of Technology Thonburi: Napat Chansawang, Sirikarn Aueamornsuk, and Titiphon Phunmongkon."
 }

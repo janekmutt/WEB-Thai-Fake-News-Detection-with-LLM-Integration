@@ -179,8 +179,6 @@ def ocr():
 
     return jsonify({"error": "ไม่พบไฟล์ภาพ"}), 400
 
-
-
 # Function to convert text to word vector
 def get_word2vec_embedding(text, model, vector_size=300):
     vec = np.zeros((vector_size,))
@@ -219,8 +217,8 @@ def preprocess_and_extract_features(text):
 # Load Gradio Clients
 bert_client = Client("EXt1/BERT-thainews-classification")
 mdeberta_client = Client("EXt1/Mdeberta_v3_Thainews_Classification")
-reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
-summary_client = Client("EXt1/KMUTT-CPE-Thai-Summarizer")
+# reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
+# summary_client = Client("EXt1/KMUTT-CPE-Thai-Summarizer")
 
 def predict_with_bert(text):
     result = bert_client.predict(text=text, api_name="/predict")
@@ -414,6 +412,83 @@ def predict_url():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# @app.route("/ocr-predict", methods=["POST"])
+# def ocr_predict():
+#     file = request.files.get("image")
+
+#     if not file:
+#         return jsonify({"error": "ไม่พบไฟล์ภาพ"}), 400
+
+#     in_memory_image = np.asarray(bytearray(file.read()), dtype=np.uint8)
+#     image = cv2.imdecode(in_memory_image, cv2.IMREAD_COLOR)
+
+#     ocr_text, error = ocr_from_image(image)
+
+#     if error:
+#         return jsonify({"error": error}), 400
+
+#     if not ocr_text:
+#         return jsonify({"error": "ไม่พบข้อความในภาพ"}), 400
+
+#     try:
+#         model_input = ocr_text.strip()
+#         print("🧾 OCR Text:", model_input)
+
+#         # 🔍 ค้นหาข่าว
+#         result = asyncio.run(extractor.search_and_extract_top_result(model_input))
+
+#         if result and result.get("title"):
+#             title = result["title"]
+#             top_content = result.get("content", "")
+#             other_links = result.get("other_links", [])
+#             summary = get_summary(top_content)
+#         else:
+#             # 🔁 Fallback: ไม่มีเนื้อหาที่เกี่ยวข้อง
+#             title = model_input
+#             top_content = ""
+#             other_links = []
+#             summary = "ไม่พบบทความที่เกี่ยวข้องกับข้อความนี้"
+
+#         other_links_json = json.dumps(other_links)
+
+#         # ✅ ทำนายต่อ
+#         lstm_label, lstm_prob = predict_with_lstm(model_input)
+#         bert_label, bert_prob = predict_with_bert(model_input)
+#         mdeberta_label, mdeberta_prob = predict_with_mdeberta(model_input)
+
+#         all_predictions = [
+#             (lstm_label, lstm_prob),
+#             (bert_label, bert_prob),
+#             (mdeberta_label, mdeberta_prob)
+#         ]
+#         final_label, final_avg_prob = majority_vote(all_predictions)
+
+#         label_for_reasoning = label_map_for_reasoning.get(final_label, final_label)
+#         reason = get_reasoning(model_input, label_for_reasoning)
+
+#         # ✅ บันทึก
+#         save_prediction_to_db(model_input, final_avg_prob, other_links_json, final_label, reason, summary)
+
+#         return jsonify({
+#             "ocr_text": model_input,
+#             "prediction": final_label,
+#             "probability": round(final_avg_prob, 4),
+#             "title": title,
+#             "other_links": other_links,
+#             "top_content": top_content,
+#             "individual_predictions": {
+#                 "LSTM": {"label": lstm_label, "probability": round(lstm_prob, 4)},
+#                 "BERT": {"label": bert_label, "probability": round(bert_prob, 4)},
+#                 "MDeBERTa": {"label": mdeberta_label, "probability": round(mdeberta_prob, 4)}
+#             },
+#             "reasoning": reason,
+#             "summary": summary
+#         })
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     init_db()

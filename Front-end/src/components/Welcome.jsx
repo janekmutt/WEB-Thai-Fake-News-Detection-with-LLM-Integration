@@ -231,25 +231,20 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { IoIosTime, IoIosClose } from "react-icons/io";
 
-export const FadeUp = (delay) => {
-  return {
-    initial: {
-      opacity: 0,
-      y: 50,
+export const FadeUp = (delay) => ({
+  initial: { opacity: 0, y: 50 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      duration: 0.5,
+      delay,
+      ease: "easeInOut",
     },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        duration: 0.5,
-        delay: delay,
-        ease: "easeInOut",
-      },
-    },
-  };
-};
+  },
+});
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -259,9 +254,7 @@ const Welcome = () => {
   const [newsContent, setNewsContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClear = () => {
-    setPrompt("");
-  };
+  const handleClear = () => setNewsContent("");
 
   const handleGenerate = async () => {
     if (!newsContent.trim()) return;
@@ -270,16 +263,13 @@ const Welcome = () => {
     try {
       const response = await fetch("http://localhost:5000/predict", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: newsContent }),
       });
 
       if (!response.ok) throw new Error("Network response was not ok");
 
       const result = await response.json();
-
       navigate("/Result", {
         state: {
           input_text: newsContent,
@@ -296,21 +286,18 @@ const Welcome = () => {
       console.error("Error during generate:", err);
       alert("เกิดข้อผิดพลาดในการตรวจสอบข่าว");
     } finally {
-      setIsLoading(false); // ✅ หยุดโหลด
+      setIsLoading(false);
     }
   };
 
-  const handleHistoryToggle = () => {
-    setShowHistory((prev) => !prev);
-  };
+  const handleHistoryToggle = () => setShowHistory((prev) => !prev);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         const response = await fetch("http://localhost:5000/get-history");
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
-        }
         const data = await response.json();
         setHistoryData(data);
       } catch (error) {
@@ -333,7 +320,10 @@ const Welcome = () => {
 
       <div className="max-w-7xl mx-auto relative">
         <Particle />
-        <div className="flex flex-col md:flex-row items-start justify-between min-h-[35vh] mt-4 px-6 lg:px-8">
+
+        {/* Hero Section */}
+        <div className="flex flex-col md:flex-row items-center justify-between min-h-[35vh] mt-4 px-6 lg:px-8">
+          {/* Left Content */}
           <div className="md:w-1/2 flex flex-col space-y-4">
             <motion.h1
               variants={FadeUp(0.5)}
@@ -343,6 +333,7 @@ const Welcome = () => {
             >
               Real or Fake Thai News ?
             </motion.h1>
+
             <motion.p
               variants={FadeUp(0.75)}
               initial="initial"
@@ -360,7 +351,7 @@ const Welcome = () => {
               }}
             >
               <input
-                type="newsContent"
+                type="text"
                 value={newsContent}
                 onChange={(e) => setNewsContent(e.target.value)}
                 placeholder={t("text_check_placeholder")}
@@ -368,14 +359,12 @@ const Welcome = () => {
               />
 
               <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleClear}
-                    className="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 text-sm"
-                  >
-                    Clear all
-                  </button>
-                </div>
+                <button
+                  onClick={handleClear}
+                  className="bg-gray-200 text-gray-800 px-3 py-1 rounded hover:bg-gray-300 text-sm"
+                >
+                  Clear all
+                </button>
 
                 <button
                   onClick={handleGenerate}
@@ -398,14 +387,15 @@ const Welcome = () => {
             </div>
           </div>
 
-          <div className="md:w-1/2 relative flex justify-center items-end mt-6 md:mt-0">
+          {/* Right Image */}
+          <div className="md:w-1/2 flex justify-center items-center mt-6 md:mt-0">
             <motion.img
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4, ease: "easeInOut" }}
               src={CheckWelcome2}
-              alt="Check Welcome2"
-              className="w-full max-w-[300px] h-auto"
+              alt="Check Welcome"
+              className="w-full max-w-[400px] h-auto object-contain"
             />
           </div>
         </div>
@@ -417,6 +407,7 @@ const Welcome = () => {
 
       <Statistics />
 
+      {/* History Panel */}
       <div className={`history-panel ${showHistory ? "show" : ""}`}>
         <div className="history-panel-header">
           <button className="history-toggle-button">
@@ -430,6 +421,7 @@ const Welcome = () => {
             <IoIosClose size={24} />
           </button>
         </div>
+
         <ul>
           {historyData.length > 0 ? (
             historyData.map((item, index) => (

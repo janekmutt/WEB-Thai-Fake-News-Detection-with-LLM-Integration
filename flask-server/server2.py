@@ -16,11 +16,16 @@ from webcrawler import ContentExtractor
 import asyncio
 import pyodbc
 import json
+import redis
+
+
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173"])
 
 extractor = ContentExtractor()
+
 
 # Load original models EXACTLY as in your code
 fasttext_model = KeyedVectors.load_word2vec_format(
@@ -36,99 +41,33 @@ lstm_model = tf.keras.models.load_model(
 )
 lstm_model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-# ฟังก์ชันการเชื่อมต่อกับฐานข้อมูล MSSQL
-def get_db_connection():
-    try:
-        conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=LAPTOP-H0CKMDVC\SQLEXPRESS;'  # เปลี่ยนชื่อเซิร์ฟเวอร์ MSSQL ของคุณ
-            'DATABASE=fake_news_predictions_result9;'  # เปลี่ยนชื่อฐานข้อมูล
-            'Trusted_Connection=yes;'
-        )
-        print("✅ DB connected")
-        return conn
-    except Exception as e:
-        print("❌ DB connection error:", e)
-        raise
 
-# ฟังก์ชันสำหรับสร้างตารางในฐานข้อมูล
-def init_db():
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='prediction_history' AND xtype='U')
-            CREATE TABLE prediction_history (
-                id INT PRIMARY KEY IDENTITY(1,1),
-                model_input NVARCHAR(MAX),      -- ข้อความที่ผู้ใช้ป้อน
-                other_links_json NVARCHAR(MAX),    -- ลิงค์ที่เกี่ยวข้อง (สามารถเก็บหลายลิงค์)
-                final_avg_prob FLOAT,         -- ความน่าจะเป็นโดยรวมจากการทำนาย
-                final_label NVARCHAR(MAX),
-                timestamp DATETIME DEFAULT GETDATE(),  -- เวลาที่บันทึกข้อมูล,
-                reason NVARCHAR(MAX),      -- เหตุผลที่ทำนาย
-                summary NVARCHAR(MAX)        -- สรุปเนื้อหาข่าว
-            )
-        ''')
-        conn.commit()
-        print("✅ Table created or already exists")
 
-# ฟังก์ชันบันทึกข้อมูลการทำนายลงฐานข้อมูล
-def save_prediction_to_db(model_input, final_avg_prob, other_links_json,  final_label,reason,summary):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
 
-        # เพิ่มข้อมูลการทำนายลงในตาราง prediction_history
-        cursor.execute('''INSERT INTO prediction_history (model_input, final_avg_prob, other_links_json,final_label,reason,summary) VALUES (?, ?, ?, ?, ?, ?)''', 
-                       (model_input, final_avg_prob, other_links_json, final_label,reason,summary))
-        conn.commit()
-        print("✅ Prediction saved to database")
-    except Exception as e:
-        print("❌ Error saving prediction to database:", e)
-    finally:
-        conn.close()
-
-# ฟังก์ชันดึงข้อมูลประวัติการทำนายจากฐานข้อมูล
 @app.route("/get-history", methods=["GET"])
 def get_history():
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        # Retrieve all history data from Redis (using LPUSH or LRANGE)
+        history_data = r.lrange("prediction_history", 0, -1)  # Retrieve all elements from the list
 
-        cursor.execute("""
-            SELECT model_input, final_avg_prob, other_links_json,final_label, timestamp,reason,summary
-            FROM prediction_history
-            ORDER BY id DESC
-        """)
-
-        rows = cursor.fetchall()
-
-        # เตรียมข้อมูลผลลัพธ์ที่ดึงมาจากฐานข้อมูล
+        # Parse JSON data into Python dictionaries
         history = []
-        for row in rows:
-            if len(row) == 7:  # ตรวจสอบว่ามี 6 คอลัมน์ในแต่ละแถว
-                history.append({
-                    "model_input": row[0],
-                    "final_avg_prob": row[1],
-                    "other_links_json": row[2],
-                    "final_label": row[3],
-                    "timestamp": row[4],
-                    "reason": row[5],
-                    "summary": row[6]
-                })
-            else:
-                print(f"Skipping row with incorrect number of columns: {len(row)}")
+        for history_entry_json in history_data:
+            # Convert the JSON string back into a Python dictionary
+            history_entry = json.loads(history_entry_json)
 
-        # ตรวจสอบข้อมูลที่ดึงมาจากฐานข้อมูล
-        print("History data:", history)
+            # Optionally, you can manipulate or format the data further
+            history.append({
+                "model_input": history_entry["model_input"],
+                "final_avg_prob": history_entry["final_avg_prob"],
+                "other_links": history_entry["other_links"],  # This is already a list
+                "final_label": history_entry["final_label"],
+                "timestamp": history_entry["timestamp"],  # Assuming timestamp was stored
+                "reason": history_entry["reason"],
+                "summary": history_entry["summary"]
+            })
 
-        # แปลง `other_links_json` กลับเป็น list หรือ tuple
-        for item in history:
-            item["other_links"] = json.loads(item["other_links_json"])  # แปลงเป็น list
-            # หรือถ้าต้องการให้เป็น tuple
-            item["other_links"] = tuple(item["other_links"])  # แปลงเป็น tuple
-
-        conn.close()
-
+        # Return the history data as a JSON response
         return jsonify(history), 200
 
     except Exception as e:
@@ -217,8 +156,8 @@ def preprocess_and_extract_features(text):
 # Load Gradio Clients
 bert_client = Client("EXt1/BERT-thainews-classification")
 mdeberta_client = Client("EXt1/Mdeberta_v3_Thainews_Classification")
-# reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
-# summary_client = Client("EXt1/KMUTT-CPE-Thai-Summarizer")
+reasoning_client = Client("EXt1/Typhoon_7B_reasoning")
+summary_client = Client("EXt1/KMUTT-CPE-Thai-Summarizer")
 
 def predict_with_bert(text):
     result = bert_client.predict(text=text, api_name="/predict")
@@ -298,9 +237,6 @@ def predict():
         top_content = result["content"]
         other_links = result.get("other_links", [])
 
-        # แปลง `other_links` เป็น JSON string
-        other_links_json = json.dumps(other_links)
-
         # Get predictions
         lstm_label, lstm_prob = predict_with_lstm(model_input)
         bert_label, bert_prob = predict_with_bert(model_input)
@@ -318,9 +254,6 @@ def predict():
         reason = get_reasoning(model_input, label_for_reasoning)
         summary = get_summary(top_content)
 
-        # บันทึกข้อมูลการทำนายลงฐานข้อมูล
-        save_prediction_to_db(model_input, final_avg_prob, other_links_json, final_label, reason, summary)
-
         # ส่งข้อมูลที่ทำนายกลับไปยังผู้ใช้
         response = {
             "prediction": final_label,
@@ -337,6 +270,17 @@ def predict():
             "reasoning": reason,
             "summary": summary
         }
+        history_entry = {
+        "final_label": final_label,
+        "final_avg_prob": round(final_avg_prob, 4),
+        "model_input": model_input,
+        "other_links": other_links,  # Store as list
+        "reason": reason,
+        "summary": summary,
+         }
+
+        # Save to Redis (assuming r is your Redis client)
+        r.lpush("prediction_history", json.dumps(history_entry))
 
         return jsonify(response)
 
@@ -362,9 +306,6 @@ def predict_url():
             top_link = result["link"]
             top_content = result["content"]
             other_links = result.get("other_links", [])
-
-            # แปลง `other_links` เป็น JSON string
-            other_links_json = json.dumps(other_links)
     
             # Step 3: Get predictions using your models
             lstm_label, lstm_prob = predict_with_lstm(model_input)
@@ -385,8 +326,6 @@ def predict_url():
             reason = get_reasoning(model_input, label_for_reasoning)
             summary = get_summary(top_content)
 
-            # Step 6: Save the prediction to the database
-            save_prediction_to_db(model_input, final_avg_prob, other_links_json, final_label, reason, summary)
 
             # Prepare the response
             response = {
@@ -404,6 +343,17 @@ def predict_url():
             "reasoning": reason,
             "summary": summary
             }
+            history_entry = {
+            "final_label": final_label,
+            "final_avg_prob": round(final_avg_prob, 4),
+            "model_input": model_input,
+            "other_links": other_links,  # Store as list
+            "reason": reason,
+            "summary": summary,
+            }
+
+            # Save to Redis (assuming r is your Redis client)
+            r.lpush("prediction_history", json.dumps(history_entry))
 
             return jsonify(response)
 

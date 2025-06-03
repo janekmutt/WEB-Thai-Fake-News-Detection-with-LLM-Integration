@@ -1,11 +1,15 @@
 ## 🚨⚠️ Important: Backend Requires **Python 3.10 ONLY** ⚠️🚨
 
+---
+
 ## 🚀 Backend (Flask)
 
 ```bash
 pip install requests pyodbc google-search-results streamlit beautifulsoup4 selenium webdriver-manager chardet PyMuPDF easyocr deepcut
 
 ```
+
+---
 
 ## 🌐 Frontend (React)
 

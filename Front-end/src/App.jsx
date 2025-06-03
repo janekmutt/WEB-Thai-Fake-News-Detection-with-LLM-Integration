@@ -1,22 +1,3 @@
-// import { useState, useEffect } from "react";
-// import "./App.css";
-
-// import Welcome from "./components/Welcome";
-// import Navbar from "./components/Navbar";
-// import InfoOne from "./components/InfoOne";
-
-// function App() {
-//   return (
-//     <>
-//       <Navbar />
-//       <Welcome />
-//       <InfoOne />
-//     </>
-//   );
-// }
-
-// export default App;
-
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Welcome from "./components/Welcome.jsx";

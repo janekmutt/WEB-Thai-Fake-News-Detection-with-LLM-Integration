@@ -1,4 +1,4 @@
-### 🚨⚠️ Important: Backend Requires **Python 3.10 ONLY** ⚠️🚨
+## 🚨⚠️ Important: Backend Requires **Python 3.10 ONLY** ⚠️🚨
 
 ## 🚀 Backend (Flask)
 
